@@ -1,0 +1,5 @@
+secret.key
+venv
+.env
+__pycache__
+instance/*

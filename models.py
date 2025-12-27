@@ -1,0 +1,110 @@
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+import enum
+from sqlalchemy import Enum
+
+db = SQLAlchemy()
+
+class MovementType(enum.Enum):
+    payment = "payment"
+    income = "income"
+    transfer = "transfer"
+
+class AccountType(enum.Enum):
+    cash = "cash"
+    bank = "bank"
+    insurance = "insurance"
+    investment = "investment"
+
+# ------------------------
+# Authentication user
+# ------------------------
+
+class User(UserMixin, db.Model):  # UserMixin here for Flask-Login
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+
+    def set_password(self, password):
+        from werkzeug.security import generate_password_hash
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
+
+    # Flask-Login compatibility (already handled by UserMixin)
+    is_active = True
+
+# ------------------------
+# Owner (real person/entity)
+# ------------------------
+class Owner(db.Model):
+    __tablename__ = "owners"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+
+    accounts = db.relationship("Account", back_populates="owner")
+    entries = db.relationship("Entry", back_populates="owner")  # <-- add this
+
+class Account(db.Model):
+    __tablename__ = "accounts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+
+    account_type = db.Column(
+        db.Enum(AccountType),
+        nullable=False
+    )
+
+    owner_id = db.Column(
+        db.Integer,
+        db.ForeignKey("owners.id"),
+        nullable=False
+    )
+
+    owner = db.relationship("Owner", back_populates="accounts")
+    entries = db.relationship("Entry", back_populates="account")
+
+class Category(db.Model):
+    __tablename__ = "categories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+
+    subcategories = db.relationship("SubCategory", back_populates="category")
+    entries = db.relationship("Entry", back_populates="category")
+
+
+class SubCategory(db.Model):
+    __tablename__ = "subcategories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
+
+    category = db.relationship("Category", back_populates="subcategories")
+    entries = db.relationship("Entry", back_populates="subcategory")
+
+
+class Entry(db.Model):
+    __tablename__ = "entries"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    owner_id = db.Column(db.Integer, db.ForeignKey("owners.id"), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
+    sub_category_id = db.Column(db.Integer, db.ForeignKey("subcategories.id"), nullable=True)
+
+    owner = db.relationship("Owner", back_populates="entries")  # <-- fix here
+    account = db.relationship("Account", back_populates="entries")
+    category = db.relationship("Category", back_populates="entries")
+    subcategory = db.relationship("SubCategory", back_populates="entries")
+
+    amount = db.Column(db.Float, nullable=False)
+    movement_type = db.Column(db.Enum(MovementType), nullable=False)
+    description = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.String(10), nullable=False)
