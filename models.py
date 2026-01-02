@@ -1,9 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
+from extensions import db
 from flask_login import UserMixin
 import enum
-from sqlalchemy import Enum
-
-db = SQLAlchemy()
 
 class MovementType(enum.Enum):
     payment = "payment"
@@ -54,19 +51,25 @@ class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
-    account_type = db.Column(
-        db.Enum(AccountType),
-        nullable=False
-    )
+    account_type = db.Column(db.Enum(AccountType), nullable=False)
 
-    owner_id = db.Column(
-        db.Integer,
-        db.ForeignKey("owners.id"),
-        nullable=False
-    )
-
+    owner_id = db.Column(db.Integer, db.ForeignKey("owners.id"), nullable=False)
     owner = db.relationship("Owner", back_populates="accounts")
-    entries = db.relationship("Entry", back_populates="account")
+
+    # Source account entries
+    entries = db.relationship(
+        "Entry",
+        foreign_keys="Entry.account_id",
+        back_populates="account"
+    )
+
+    # Destination account (transfers)
+    incoming_transfers = db.relationship(
+        "Entry",
+        foreign_keys="Entry.destination_account_id",
+        back_populates="destination_account"
+    )
+
 
 class Category(db.Model):
     __tablename__ = "categories"
@@ -87,24 +90,38 @@ class SubCategory(db.Model):
 
     category = db.relationship("Category", back_populates="subcategories")
     entries = db.relationship("Entry", back_populates="subcategory")
-
-
+    
 class Entry(db.Model):
     __tablename__ = "entries"
 
     id = db.Column(db.Integer, primary_key=True)
 
     owner_id = db.Column(db.Integer, db.ForeignKey("owners.id"), nullable=False)
+
     account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=False)
+    destination_account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=True)
+
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
     sub_category_id = db.Column(db.Integer, db.ForeignKey("subcategories.id"), nullable=True)
-
-    owner = db.relationship("Owner", back_populates="entries")  # <-- fix here
-    account = db.relationship("Account", back_populates="entries")
-    category = db.relationship("Category", back_populates="entries")
-    subcategory = db.relationship("SubCategory", back_populates="entries")
 
     amount = db.Column(db.Float, nullable=False)
     movement_type = db.Column(db.Enum(MovementType), nullable=False)
     description = db.Column(db.String(100), nullable=False)
     date = db.Column(db.String(10), nullable=False)
+
+    owner = db.relationship("Owner")
+
+    account = db.relationship(
+        "Account",
+        foreign_keys=[account_id],
+        back_populates="entries"
+    )
+
+    destination_account = db.relationship(
+        "Account",
+        foreign_keys=[destination_account_id],
+        back_populates="incoming_transfers"
+    )
+
+    category = db.relationship("Category", back_populates="entries")
+    subcategory = db.relationship("SubCategory", back_populates="entries")

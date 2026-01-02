@@ -220,9 +220,13 @@ document.getElementById("add-entry").addEventListener("click", async () => {
         const ownerObj = owners.find(o => o.id == ownerId);
         if (!ownerObj) { alert("Invalid owner"); return; }
 
+        const destinationAccountId = document.getElementById("entry-destination-account").value || null;
+
+
         await fetchJson("/entries", "POST", {
             owner: ownerObj.name,
             account_id: accountId,
+            destination_account_id: destinationAccountId,
             category_id: categoryId,
             sub_category_id: subCategoryId,
             amount,
@@ -273,10 +277,17 @@ async function loadEntries(filters = {}) {
 
         for (const e of entries) {
             const tr = document.createElement("tr");
+
+            const destinationCell =
+            e.movement_type === "transfer" && e.destination_account
+                ? `→ ${e.destination_account.name}`
+                : "";
+
             tr.innerHTML = `
                 <td>${e.id}</td>
                 <td>${e.owner.name}</td>
                 <td>${e.account.name}</td>
+                <td>${destinationCell}</td>
                 <td>${e.account.account_type}</td>
                 <td>${e.category.name}</td>
                 <td>${e.subcategory ? e.subcategory.name : ""}</td>

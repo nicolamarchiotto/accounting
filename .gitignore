@@ -1,5 +1,7 @@
 secret.key
 venv
 .env
+auth/__pycache__
+api/__pycache__
 __pycache__
 instance/*
