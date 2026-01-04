@@ -6,7 +6,7 @@ from flask_login import (
 from extensions import db, login_manager
 from models import User
 from api import register_api
-from auth import register_auth
+from routes import register_routes
 from dotenv import load_dotenv
 
 
@@ -21,7 +21,7 @@ db.init_app(app)
 login_manager.init_app(app)
 
 register_api(app)
-register_auth(app)
+register_routes(app)
 
 init_done = False
 
@@ -55,8 +55,8 @@ def load_user(user_id):
 
 @app.route("/home")
 @login_required
-def index():
-    return render_template("index.html")
+def home():
+    return render_template("home.html")
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

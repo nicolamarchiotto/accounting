@@ -87,26 +87,26 @@ document.getElementById("entry-category").addEventListener("change", () => {
 });
 
 // Login
-document.getElementById("login-form").addEventListener("submit", async e => {
-    e.preventDefault();
-    try {
-        await fetchJson("/login", "POST", {
-            username: document.getElementById("username").value,
-            password: document.getElementById("password").value
-        });
-        alert("Login successful");
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("add-data-section").style.display = "block";
-        document.getElementById("filter-entries-section").style.display = "block";
-        document.getElementById("entries-section").style.display = "block";
-        document.getElementById("logout-button").style.display = "inline-block";
-
-        await loadDropdowns();
-        await loadEntries();
-    } catch (err) {
-        alert("Login failed: " + err.message);
-    }
-});
+//document.getElementById("login-form").addEventListener("submit", async e => {
+//    e.preventDefault();
+//    try {
+//        await fetchJson("/login", "POST", {
+//            username: document.getElementById("username").value,
+//            password: document.getElementById("password").value
+//        });
+//        alert("Login successful");
+//        document.getElementById("login-section").style.display = "none";
+//        document.getElementById("add-data-section").style.display = "block";
+//        document.getElementById("filter-entries-section").style.display = "block";
+//        document.getElementById("entries-section").style.display = "block";
+//        document.getElementById("logout-button").style.display = "inline-block";
+//
+//        await loadDropdowns();
+//        await loadEntries();
+//    } catch (err) {
+//        alert("Login failed: " + err.message);
+//    }
+//});
 
 // Logout
 document.getElementById("logout-button").addEventListener("click", async () => {

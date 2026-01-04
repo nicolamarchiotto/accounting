@@ -18,6 +18,14 @@
         <button id="logout-button" style="display:none;">Logout</button>
     </section>
 
+    <section id="owner-section" style="display:none;">
+        <h2>Add Owner</h2>
+        <input type="text" id="owner-name" placeholder="Owner Name" />
+        <button id="add-owner">Add Owner</button>
+
+    </section>
+
+
     <section id="add-data-section" style="display:none;">
         <h2>Add Owner</h2>
         <input type="text" id="owner-name" placeholder="Owner Name" />
@@ -75,17 +83,9 @@
                 <tr>
                     <th>ID</th>
                     <th>Owner</th>
-                    <th>Account</th>
-                    <th>Account Type</th>
-                    <th>Category</th>
-                    <th>SubCategory</th>
-                    <th>Amount</th>
-                    <th>Movement Type</th>
-                    <th>Description</th>
-                    <th>Date</th>
                 </tr>
             </thead>
-            <tbody id="entries-tbody"></tbody>
+            <tbody id="owners-tbody"></tbody>
         </table>
     </section>
 

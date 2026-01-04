@@ -35,3 +35,40 @@ def add_owner():
         return jsonify({"error": "Database error: " + str(e)}), 500
 
     return jsonify({"id": new_owner.id, "name": new_owner.name}), 201
+
+
+@owners_bp.route("/owners/remove/<int:owner_id>", methods=["DELETE"])
+def remove_owner(owner_id):
+    owner = Owner.query.get(owner_id)
+    if not owner:
+        return jsonify({"error": "Owner not found"}), 404
+    
+    try:
+        db.session.delete(owner)
+        db.session.commit()
+        return jsonify({"success": True, "message": f"Owner with ID {owner_id} deleted"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to delete owner", "details": str(e)}), 500
+    
+@owners_bp.route("/owners/edit/<int:owner_id>", methods=["PUT"])
+def edit_owner(owner_id):
+    data = request.get_json()
+    new_name = data.get("name", "").strip()
+    if not new_name:
+        return jsonify({"error": "New name is required"}), 400
+    
+    owner = Owner.query.get(owner_id)
+    if not owner:
+        return jsonify({"error": "Owner not found"}), 404
+    
+    try:
+        owner.name = new_name
+        db.session.commit()
+        return jsonify({"success": True, "message": f"Owner with ID {owner_id} updated", "owner": {"id": owner.id, "name": owner.name}})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to delete owner", "details": str(e)}), 500
+    
+
+
