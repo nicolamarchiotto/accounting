@@ -38,6 +38,7 @@ def add_owner():
 
 
 @owners_bp.route("/owners/remove/<int:owner_id>", methods=["DELETE"])
+@login_required
 def remove_owner(owner_id):
     owner = Owner.query.get(owner_id)
     if not owner:
@@ -52,6 +53,7 @@ def remove_owner(owner_id):
         return jsonify({"error": "Failed to delete owner", "details": str(e)}), 500
     
 @owners_bp.route("/owners/edit/<int:owner_id>", methods=["PUT"])
+@login_required
 def edit_owner(owner_id):
     data = request.get_json()
     new_name = data.get("name", "").strip()
@@ -68,7 +70,4 @@ def edit_owner(owner_id):
         return jsonify({"success": True, "message": f"Owner with ID {owner_id} updated", "owner": {"id": owner.id, "name": owner.name}})
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "Failed to delete owner", "details": str(e)}), 500
-    
-
-
+        return jsonify({"error": "Failed to update owner", "details": str(e)}), 500

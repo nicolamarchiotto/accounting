@@ -43,7 +43,7 @@ class Owner(db.Model):
     name = db.Column(db.String(50), nullable=False, unique=True)
 
     accounts = db.relationship("Account", back_populates="owner")
-    entries = db.relationship("Entry", back_populates="owner")  # <-- add this
+    entries = db.relationship("Entry", back_populates="owner")
 
 class Account(db.Model):
     __tablename__ = "accounts"
