@@ -1,1 +1,32 @@
 <h2>Accounts</h2>
+
+<h2>Add account</h2>
+<input type="text" id="account-name" placeholder="Account Name" />
+<select id="account-owner-select" name="account-owner"></select>
+<select id="account-type-select" name="account-type"></select>
+<button id="add-account">Add account</button>
+
+<h2>Remove account</h2>
+<input type="text" id="account-id" placeholder="Account ID" />
+<button id="remove-account">Remove account</button>
+
+<h2>Edit account</h2>
+<input type="text" id="account-edit-id" placeholder="Account ID" />
+<input type="text" id="account-edit-name" placeholder="New Account Name" />
+<select id="edit-account-owner-select" name="edit-account-owner"></select>
+<select id="edit-account-type-select" name="edit-account-type"></select>
+<button id="edit-account">Edit account name</button>
+
+<h2>All accounts</h2>
+<button id="get-account">Get accounts</button>
+<table id="accounts-table" border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Account Name</th>
+            <th>Owner</th>
+            <th>Account Type</th>
+        </tr>
+    </thead>
+    <tbody id="accounts-tbody"></tbody>
+</table>

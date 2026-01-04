@@ -1,8 +1,11 @@
+// Globals for cached data
+let owners = [];
+
 async function fetchOwners() {
   try {
     const response = await fetch('/owners');
     if (!response.ok) throw new Error('Failed to fetch owners');
-    const owners = await response.json();
+    owners = await response.json();
     populateOwnersTable(owners);
   } catch (error) {
     alert(error.message);
