@@ -55,7 +55,7 @@ document.addEventListener("click", async e => {
                 alert("Request failed: " + err.message);
             });
         } catch (err) {
-            alert("Add entry failed: " + err.message);
+            alert("Add owner failed: " + err.message);
         }
     }
     
@@ -83,7 +83,46 @@ document.addEventListener("click", async e => {
                 alert("Request failed: " + err.message);
             });
         } catch (err) {
-            alert("Add entry failed: " + err.message);
+            alert("Remove owner failed: " + err.message);
+        }
+    }
+
+    if (e.target.id === "info-owner") {
+        const ownerId = document.getElementById("info-owner-id").value;
+        if(ownerId.trim() === "") {
+            alert("Owner ID cannot be empty");
+            return;
+        }
+        try {
+            await fetch(`/owners/info/${ownerId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            }).then(async response => {
+                if (!response.ok) {
+                    // HTTP status is NOT in the 200-299 range
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }else{
+                    const json = await response.json();
+                    
+                    const info_tbody = document.getElementById('info-owners-tbody');
+                    info_tbody.innerHTML = ''; // clear existing rows
+    
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td>${json.id}</td>
+                        <td>${json.name}</td>
+                        <td>${json.accounts_count}</td>
+                        <td>${json.entries_count}</td>
+                    `;
+                    info_tbody.appendChild(tr);
+                }
+            })
+            .catch(err => {
+                alert("Request failed: " + err.message);
+            });
+        } catch (err) {
+            alert("Info owner failed: " + err.message);
         }
     }
     

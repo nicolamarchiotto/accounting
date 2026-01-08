@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import (
     login_required
 )
-from models import Owner
+from models import Owner, Entry, Account
 from extensions import db
 
 owners_bp = Blueprint("owners", __name__)
@@ -37,21 +37,45 @@ def add_owner():
     return jsonify({"id": new_owner.id, "name": new_owner.name}), 201
 
 
+
+@owners_bp.route("/owners/info/<int:owner_id>", methods=["POST"])
+@login_required
+def info_owner(owner_id):
+    owner = Owner.query.get_or_404(owner_id)
+
+    accounts = owner.accounts
+    entries_count = sum(len(a.entries) for a in accounts)
+
+    return jsonify({
+        "owner_id": owner.id,
+        "owner_name": owner.name,
+        "accounts_count": len(accounts),
+        "entries_count": entries_count
+    })
+
 @owners_bp.route("/owners/remove/<int:owner_id>", methods=["DELETE"])
 @login_required
 def remove_owner(owner_id):
-    owner = Owner.query.get(owner_id)
-    if not owner:
-        return jsonify({"error": "Owner not found"}), 404
     
     try:
+        owner = Owner.query.get_or_404(owner_id)
+
+        if not owner:
+            return jsonify({"error": "Owner not found"}), 404
+        
+        # Delete entries → accounts → owner
+        for account in owner.accounts:
+            Entry.query.filter_by(account_id=account.id).delete()
+
+        Account.query.filter_by(owner_id=owner.id).delete()
         db.session.delete(owner)
         db.session.commit()
-        return jsonify({"success": True, "message": f"Owner with ID {owner_id} deleted"})
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "Failed to delete owner", "details": str(e)}), 500
-    
+
+    return jsonify({"success": True})
+
 @owners_bp.route("/owners/edit/<int:owner_id>", methods=["PUT"])
 @login_required
 def edit_owner(owner_id):

@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import (
     login_required
 )
-from models import Account, AccountType
+from models import Account, AccountType, Entry
 from extensions import db
 
 accounts_bp = Blueprint("accounts", __name__)
@@ -47,15 +47,34 @@ def get_accounts():
         for a in Account.query.all()
     ]), 200
 
+
+@accounts_bp.route("/accounts/info/<int:account_id>", methods=["DELETE"])
+@login_required
+def info_account(account_id):
+    account = Account.query.get_or_404(account_id)
+    entries_count = Entry.query.filter_by(account_id=account.id).count()
+
+    return jsonify({
+        "account_id": account.id,
+        "account_name": account.name,
+        "owner_name": account.owner.name,
+        "entries_count": entries_count
+    })
+
 @accounts_bp.route("/accounts/remove/<int:account_id>", methods=["DELETE"])
 @login_required
 def remove_account(account_id):
-    account = Account.query.get(account_id)
-    if not account:
-        return jsonify({"error": "account not found"}), 404
-    
+
     try:
+        account = Account.query.get_or_404(account_id)
+
+        if not account:
+            return jsonify({"error": "account not found"}), 404
+        
+        # Remove entries first
+        Entry.query.filter_by(account_id=account.id).delete()
         db.session.delete(account)
+        
         db.session.commit()
         return jsonify({"success": True, "message": f"account with ID {account_id} deleted"})
     except Exception as e:
