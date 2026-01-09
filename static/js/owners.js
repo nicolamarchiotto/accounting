@@ -1,15 +1,28 @@
 // Globals for cached data
 let owners = [];
 
-async function fetchOwners() {
-  try {
-    const response = await fetch('/owners');
-    if (!response.ok) throw new Error('Failed to fetch owners');
-    owners = await response.json();
-    populateOwnersTable(owners);
-  } catch (error) {
-    alert(error.message);
-  }
+async function initOwnersFields(tabname = "owners") {
+    const owner_res = await fetch("/owners");
+    if (!owner_res.ok) throw new Error('Failed to fetch owners');
+    owners = await owner_res.json();
+    
+    if(tabname === "accounts"){
+        const ownerSelect = document.getElementById("account-owner-select");
+        fillSelect(ownerSelect, owners, "id", "name", "Select owner");
+        const editOwnerSelect = document.getElementById("edit-account-owner-select");
+        fillSelect(editOwnerSelect, owners, "id", "name", "Select owner");
+    }
+
+    if(tabname === "owners"){
+        const infoOwnerSelect = document.getElementById("info-owner-select");
+        fillSelect(infoOwnerSelect, owners, "id", "name", "Select owner");
+        const removeOwnerSelect = document.getElementById("remove-owner-select");
+        fillSelect(removeOwnerSelect, owners, "id", "name", "Select owner");
+        const editOwnerSelect = document.getElementById("edit-owner-select");
+        fillSelect(editOwnerSelect, owners, "id", "name", "Select owner");
+
+        populateOwnersTable(owners);
+    }
 }
 
 function populateOwnersTable(owners) {
@@ -41,15 +54,19 @@ document.addEventListener("click", async e => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({name: name })
-            }).then(response => {
+            }).then(async response => {
+                const data = await response.json();
                 if (!response.ok){
-                    // HTTP status is NOT in the 200-299 range
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    if(data?.error)
+                        throw new Error(`${data?.error}`);    
+                    else
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.json(); // Parse JSON if response is OK
+
+                return data;
             })
             .then(data => {
-                fetchOwners();
+                initOwnersFields();
             })
             .catch(err => {
                 alert("Request failed: " + err.message);
@@ -60,7 +77,7 @@ document.addEventListener("click", async e => {
     }
     
     if (e.target.id === "remove-owner") {
-        const ownerId = document.getElementById("owner-id").value;
+        const ownerId = document.getElementById("remove-owner-select").value;
         if(ownerId.trim() === "") {
             alert("Owner ID cannot be empty");
             return;
@@ -77,7 +94,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
-                fetchOwners();
+                initOwnersFields();
             })
             .catch(err => {
                 alert("Request failed: " + err.message);
@@ -88,7 +105,8 @@ document.addEventListener("click", async e => {
     }
 
     if (e.target.id === "info-owner") {
-        const ownerId = document.getElementById("info-owner-id").value;
+        const ownerId = document.getElementById("info-owner-select").value;
+        
         if(ownerId.trim() === "") {
             alert("Owner ID cannot be empty");
             return;
@@ -103,7 +121,6 @@ document.addEventListener("click", async e => {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }else{
                     const json = await response.json();
-                    
                     const info_tbody = document.getElementById('info-owners-tbody');
                     info_tbody.innerHTML = ''; // clear existing rows
     
@@ -127,7 +144,7 @@ document.addEventListener("click", async e => {
     }
     
     if (e.target.id === "edit-owner") {
-        const ownerId = document.getElementById("owner-edit-id").value;
+        const ownerId = document.getElementById("edit-owner-select").value;
         const ownerName = document.getElementById("owner-edit-name").value;
 
         if(ownerId.trim() === "" || ownerName.trim() === "") {
@@ -147,7 +164,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
-                fetchOwners();
+                initOwnersFields();
             })
             .catch(err => {
                 alert("Request failed: " + err.message);
@@ -158,6 +175,6 @@ document.addEventListener("click", async e => {
     }
 
     if (e.target.id === "get-owner") {
-        fetchOwners();
+        initOwnersFields();
     }
 });

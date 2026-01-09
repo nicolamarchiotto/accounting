@@ -24,6 +24,9 @@ def accounts():
     except ValueError:
         return jsonify({"error": "Invalid account type"}), 400
 
+    if(Account.query.filter_by(name=account_name).first()):
+        return jsonify({"error": "Account name already exists"}), 400
+
     account = Account(
         name=account_name,
         account_type=account_type_enum,

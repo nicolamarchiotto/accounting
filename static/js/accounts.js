@@ -1,15 +1,29 @@
 let accounts = [];
-let accountTypes = [];
+let account_types = [];
 
-async function fetchAccounts() {
-  try {
-    const response = await fetch('/accounts');
-    if (!response.ok) throw new Error('Failed to fetch accounts');
-    accounts = await response.json();
-    populateAccountsTable(accounts);
-  } catch (error) {
-    alert(error.message);
-  }
+async function initAccountsFields(tabname = "accounts") {
+    
+    if(tabname === "accounts"){
+        const response = await fetch('/accounts');
+        if (!response.ok) throw new Error('Failed to fetch accounts');
+        accounts = await response.json();
+        populateAccountsTable(accounts);
+
+        const removeAccountSelect = document.getElementById("remove-account-select");
+        fillSelect(removeAccountSelect, accounts, "id", "name", "Select account");
+
+        const editAccountSelect = document.getElementById("edit-account-select");
+        fillSelect(editAccountSelect, accounts, "id", "name", "Select account");
+
+        const account_types_res = await fetch("/account/types");
+        if(!account_types_res.ok) throw new Error('Failed to fetch account types');
+        account_types = await account_types_res.json();
+
+        const accountTypeSelect = document.getElementById("account-type-select");
+        fillSelect(accountTypeSelect, account_types, "type", "type", "Select account type", true);
+        const editAccountTypeSelect = document.getElementById("edit-account-type-select");
+        fillSelect(editAccountTypeSelect, account_types, "type", "type", "Select account type", true);
+    }
 }
 
 function populateAccountsTable(accounts) {
@@ -30,18 +44,6 @@ function populateAccountsTable(accounts) {
 }
 }
 
-async function loadOwnersSelect() {
-    const res = await fetch("/owners");
-    const owners = await res.json();
-
-    const ownerSelect = document.getElementById("account-owner-select");
-    fillSelect(ownerSelect, owners, "id", "name");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadOwnersSelect();
-});
-
 document.addEventListener("click", async e => {
     if (e.target.id === "add-account") {
         const name = document.getElementById("account-name").value;
@@ -58,15 +60,18 @@ document.addEventListener("click", async e => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({name: name, account_type: accountType, owner_id: acconuntOwner})
-            }).then(response => {
+            }).then(async response => {
+                const data = await response.json(); // ALWAYS parse JSON
                 if (!response.ok){
-                    // HTTP status is NOT in the 200-299 range
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    if(data?.error)
+                        throw new Error(`${data?.error}`);    
+                    else
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.json(); // Parse JSON if response is OK
+                return data; // Parse JSON if response is OK
             })
             .then(data => {
-                fetchAccounts();
+                initAccountsFields();
             })
             .catch(err => {
                 alert("Request failed: " + err.message);
@@ -77,7 +82,7 @@ document.addEventListener("click", async e => {
     }
     
     if (e.target.id === "remove-account") {
-        const accountId = document.getElementById("account-id").value;
+        const accountId = document.getElementById("remove-account-select").value;
         if(accountId.trim() === "") {
             alert("Account ID cannot be empty");
             return;
@@ -94,7 +99,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
-                fetchAccounts();
+                initAccountsFields();
             })
             .catch(err => {
                 alert("Request failed: " + err.message);
@@ -105,7 +110,7 @@ document.addEventListener("click", async e => {
     }
     
     if (e.target.id === "edit-account") {
-        const accountId = document.getElementById("account-edit-id").value;
+        const accountId = document.getElementById("edit-account-select").value;
         const accountName = document.getElementById("account-edit-name").value;
         const accountType = document.getElementById("edit-account-type-select").value;
         const accountOwner = document.getElementById("edit-account-owner-select").value;
@@ -127,7 +132,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
-                fetchAccounts();
+                initAccountsFields();
             })
             .catch(err => {
                 alert("Request failed: " + err.message);
@@ -138,6 +143,6 @@ document.addEventListener("click", async e => {
     }
 
     if (e.target.id === "get-account") {
-        fetchAccounts();
+        initAccountsFields();
     }
 });

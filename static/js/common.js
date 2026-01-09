@@ -10,18 +10,16 @@ async function fetchJson(url, method="GET", body=null) {
 }
 
 // Utility to fill select options
-function fillSelect(selectElem, items, valueField="id", textField="name", includeEmpty=true, array_of_strings=false) {
+function fillSelect(selectElem, items, valueField="id", textField="name", emptyOption = "-- Select --", array_of_strings=false) {
      if (!selectElem) {
         console.warn("fillSelect: select element not found");
         return;
     }
     selectElem.innerHTML = "";
-    if (includeEmpty) {
-        const option = document.createElement("option");
-        option.value = "";
-        option.textContent = "-- Select --";
-        selectElem.appendChild(option);
-    }
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = emptyOption;
+    selectElem.appendChild(option);
     
     if(array_of_strings) {
         for (const item of items) {
@@ -38,16 +36,5 @@ function fillSelect(selectElem, items, valueField="id", textField="name", includ
             option.textContent = item[textField];
             selectElem.appendChild(option);
         }
-    }
-}
-
-// Utility to fill multi-select options
-function fillMultiSelect(selectElem, items, valueField="id", textField="name") {
-    selectElem.innerHTML = "";
-    for (const item of items) {
-        const option = document.createElement("option");
-        option.value = item[valueField];
-        option.textContent = item[textField];
-        selectElem.appendChild(option);
     }
 }

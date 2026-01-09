@@ -1,14 +1,10 @@
 import os
-from flask import Flask, render_template
-from flask_login import (
-    login_required
-)
+from flask import Flask, redirect, url_for
 from extensions import db, login_manager
 from models import User
 from api import register_api
 from routes import register_routes
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -19,6 +15,11 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 login_manager.init_app(app)
+login_manager.login_view = "routes.login"
+
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect(url_for('routes.login', unauthorized=1))
 
 register_api(app)
 register_routes(app)
@@ -47,16 +48,16 @@ def initialize_once():
 
     init_done = True
 
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
-
-@app.route("/home")
-@login_required
-def home():
-    return render_template("home.html")
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

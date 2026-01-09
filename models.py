@@ -8,10 +8,10 @@ class MovementType(enum.Enum):
     transfer = "transfer"
 
 class AccountType(enum.Enum):
-    cash = "cash"
-    bank = "bank"
-    insurance = "insurance"
-    investment = "investment"
+    cash = "Cash"
+    bank = "Bank"
+    insurance = "Insurance"
+    investment = "Investment"
 
 # ------------------------
 # Authentication user

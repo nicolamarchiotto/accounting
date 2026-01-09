@@ -6,6 +6,22 @@
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
 </head>
 <body>
+      <div id="unauthorized-popup" style="
+        display:none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #f44336;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        z-index: 1000;
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+    ">
+        Unauthorized! Please log in.
+    </div>
     <h2>Login</h2>
 
     <input id="username" placeholder="Username">

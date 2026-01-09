@@ -16,8 +16,5 @@ Use generate_flask_secret_key.py to generate .env SECRET_KEY
 Manage transfer entries
 Edit entries
 Scipt for categories, subcategories, accounts and owners setup
-Edit accounts
-Edit categories
-Edit owners
 
-Fronted
+Entries Fronted

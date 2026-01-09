@@ -56,7 +56,6 @@ def info_owner(owner_id):
 @owners_bp.route("/owners/remove/<int:owner_id>", methods=["DELETE"])
 @login_required
 def remove_owner(owner_id):
-    
     try:
         owner = Owner.query.get_or_404(owner_id)
 

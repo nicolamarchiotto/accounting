@@ -1,1 +1,44 @@
 <h2>Categories</h2>
+
+<h2>Add Category</h2>
+<input type="text" id="add-category-name" placeholder="Category Name" />
+<button id="add-category-button">Add category</button>
+
+<h2>Edit Category</h2>
+<select id="edit-category-select" name="edit-category-select"></select>
+<input type="text" id="edit-category-name" placeholder="New category name" />
+<button id="edit-category-button">Edit Category</button>
+
+<h2>Remove category</h2>
+<select id="remove-category-select" name="remove-category-select"></select>
+<button id="remove-category-button">Remove category</button>
+
+<h2>Add sub category</h2>
+<select id="add-subcategory-category-select" name="add-subcategory-category-select"></select>
+<input type="text" id="add-subcategory-name" placeholder="Sub Category Name" />
+<button id="add-subcategory-button">Add sub category</button>
+
+<h2>Edit Sub Category</h2>  
+<select id="edit-subcategory-category-select" name="edit-subcategory-category-select"></select>
+<select id="edit-subcategory-subcategory-select" name="edit-subcategory-subcategory-select"></select>
+<input type="text" id="edit-subcategory-name" placeholder="New sub category name" />
+<button id="edit-subcategory-button">Edit Sub Category</button>
+
+<h2>Remove sub category</h2>
+<select id="remove-subcategory-category-select" name="remove-subcategory-category-select"></select>
+<select id="remove-subcategory-subcategory-select" name="remove-subcategory-subcategory-select"></select>
+<button id="remove-subcategory-button">Remove sub category</button>
+
+<h2>All Categories</h2>
+<button id="get-category-button">Get Categories</button>
+<table id="categories-table" border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Category ID</th>
+            <th>Category Name</th>
+            <th>Subcategory ID</th>
+            <th>Subcategory Name</th>
+        </tr>
+    </thead>
+    <tbody id="categories-tbody"></tbody>
+</table>

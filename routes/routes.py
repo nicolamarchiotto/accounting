@@ -1,7 +1,6 @@
-from flask import Blueprint, request, render_template, redirect, url_for, jsonify
-from flask_login import login_user, logout_user
+from flask import Blueprint, app, request, render_template, redirect, url_for, jsonify
+from flask_login import login_user, logout_user, login_required, current_user
 from models import User
-
 routes_bp = Blueprint("routes", __name__)
 
 # -----------------------
@@ -27,10 +26,18 @@ def login():
 
     return render_template("login.html")
 
-@routes_bp.route("/logout")
+@routes_bp.route("/home")
+@login_required
+def home():
+    print("Current user authenticated:", current_user.is_authenticated)
+    if not current_user.is_authenticated:
+        return redirect(url_for("routes.login"))
+    return render_template("home.html")
+
+@routes_bp.route("/logout", methods=["POST"])
 def logout():
     logout_user()
-    return redirect(url_for("/login"))
+    return jsonify({"success": True}), 200
 
 @routes_bp.route("/tabs/owners")
 def tab_owners():

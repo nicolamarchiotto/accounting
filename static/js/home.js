@@ -10,9 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const html = await response.text();
         tabContent.innerHTML = html;
         
-        if (tab === "accounts") {
-            loadAccountSelects();
-        }
+        initOwnersFields(tab);
+        initAccountsFields(tab);
+        initCategoriesFields(tab);
 
         // Update active tab style
         document.querySelectorAll("#tabs button").forEach(btn => btn.classList.remove("active"));
@@ -30,23 +30,5 @@ document.addEventListener("DOMContentLoaded", () => {
 // logout
 document.getElementById("logout").addEventListener("click", async () => {
     await fetch("/logout", { method: "POST" });
-    window.location.href = "/login";
+    window.location.href = "/login"; 
 });
-
-async function loadAccountSelects() {
-    const owner_res = await fetch("/owners");
-    const owners = await owner_res.json();
-
-    const ownerSelect = document.getElementById("account-owner-select");
-    fillSelect(ownerSelect, owners, "id", "name");
-    const editOwnerSelect = document.getElementById("edit-account-owner-select");
-    fillSelect(editOwnerSelect, owners, "id", "name");
-    
-    const account_types_res = await fetch("/account/types");
-    const account_types = await account_types_res.json();
-
-    const accountTypesSelect = document.getElementById("account-type-select");
-    fillSelect(accountTypesSelect, account_types, "id", "name", true, true);
-    const editAccountTypesSelect = document.getElementById("edit-account-type-select");
-    fillSelect(editAccountTypesSelect, account_types, "id", "name", true, true);
-} 
