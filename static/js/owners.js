@@ -127,8 +127,8 @@ document.addEventListener("click", async e => {
                     const tr = document.createElement("tr");
 
                     tr.innerHTML = `
-                        <td>${json.id}</td>
-                        <td>${json.name}</td>
+                        <td>${json.owner_id}</td>
+                        <td>${json.owner_name}</td>
                         <td>${json.accounts_count}</td>
                         <td>${json.entries_count}</td>
                     `;

@@ -3,9 +3,9 @@ from flask_login import UserMixin
 import enum
 
 class MovementType(enum.Enum):
-    payment = "payment"
-    income = "income"
-    transfer = "transfer"
+    payment = "Payment"
+    income = "Income"
+    transfer = "Transfer"
 
 class AccountType(enum.Enum):
     cash = "Cash"
@@ -18,9 +18,11 @@ class AccountType(enum.Enum):
 # ------------------------
 
 class User(UserMixin, db.Model):  # UserMixin here for Flask-Login
+    __tablename__ = "users"
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.Text, nullable=False)  # usa Text per stringa senza limite
 
     def set_password(self, password):
         from werkzeug.security import generate_password_hash
