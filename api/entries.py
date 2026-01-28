@@ -5,6 +5,7 @@ from flask_login import (
 from models import Entry, Account, Owner, MovementType, Category, SubCategory
 from extensions import db
 from datetime import datetime
+from sqlalchemy import event
 
 entries_bp = Blueprint("entries", __name__)
 
@@ -17,18 +18,6 @@ def add_entry():
     # Extract owner name and find the owner
     data = request.json
 
-    owner_name = data.get("owner")
-    owner_id = data.get("owner_id")
-
-    if owner_name:
-        owner = Owner.query.filter_by(name=owner_name).first()
-    elif owner_id:
-        owner = Owner.query.get(owner_id)
-    else:
-        return jsonify({"error": "Missing owner"}), 400
-
-    if not owner:
-        return jsonify({"error": "Owner not found"}), 400
 
     # Extract account_id and verify account belongs to owner
     account_id = data.get("account_id")
@@ -36,6 +25,8 @@ def add_entry():
     if not account:
         return jsonify({"error": "Invalid account"}), 400
 
+    owner = Owner.query.get(account.owner_id)
+    
     # Extract other required fields
     category_id = data.get("category_id")
     category = Category.query.get(category_id)
@@ -50,7 +41,12 @@ def add_entry():
             return jsonify({"error": "Invalid subcategory"}), 400
 
     amount = data.get("amount")
-    movement_type = data.get("movement_type")
+    movement_type_idx = int(data.get("movement_type_index"))
+    print(movement_type_idx)  
+    if movement_type_idx is None or movement_type_idx < 0 or movement_type_idx >= len(MovementType):
+        return jsonify({"error": "Invalid movement_type"}), 400
+    movement_type = list(MovementType)[movement_type_idx]
+
     description = data.get("description")
     destination_account_id = data.get("destination_account_id")
     date = data.get("date")
@@ -68,25 +64,83 @@ def add_entry():
     else:
         destination_account_id = None
 
-    # Validate movement_type enum
-    try:
-        movement_enum = MovementType[movement_type]
-    except KeyError:
-        return jsonify({"error": "Invalid movement type"}), 400
-
     entry = Entry(
         owner_id=owner.id,
         account_id=account_id,
         category_id=category_id,
         sub_category_id=sub_category_id if sub_category_id else None,
         amount=amount,
-        movement_type=movement_enum,
+        movement_type=movement_type,
         description=description,
         date=date
     )
     db.session.add(entry)
     db.session.commit()
     return jsonify({"status": "ok", "id": entry.id})
+
+@entries_bp.route("/entries/remove/<int:entry_id>", methods=["DELETE"])
+@login_required
+def remove_entry(entry_id):
+    try:
+        entry = Entry.query.get_or_404(entry_id)
+        db.session.delete(entry)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to remove entry", "details": str(e)}), 500
+
+    return jsonify({"success": True})
+
+@entries_bp.route("/entries/edit/<int:entry_id>", methods=["PUT"])
+@login_required
+def edit_entry(entry_id):
+    data = request.json
+
+    entry = Entry.query.get_or_404(entry_id)
+
+    if( not entry):
+        return jsonify({"error": "Entry not found"}), 404
+
+    # Required fields
+    amount = data.get("amount")
+    movement_type_index = int(data.get("movement_type_index"))
+    description = data.get("description")
+    date = data.get("date")
+    category_id = data.get("category_id")
+
+    # Optional
+    sub_category_id = data.get("sub_category_id")
+    destination_account_id = data.get("destination_account_id")
+    movement_type = list(MovementType)[movement_type_index]
+
+    if not all([amount, movement_type, date, category_id]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        entry.movement_type = movement_type
+    except ValueError:
+        return jsonify({"error": "Invalid movement type"}), 400
+
+    entry.amount = float(amount)
+    entry.description = description
+    entry.date = date
+    entry.category_id = category_id
+    entry.sub_category_id = sub_category_id
+
+    # Transfer logic
+    if entry.movement_type == MovementType.transfer:
+        if not destination_account_id:
+            return jsonify({"error": "Destination account required for transfer"}), 400
+        entry.destination_account_id = destination_account_id
+    else:
+        entry.destination_account_id = None
+
+    try:
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 # GET /entries
 @entries_bp.route("/entries", methods=["GET"])
@@ -157,7 +211,7 @@ def filter_entries():
     for e in entries:
         result.append({
             "id": e.id,
-            "account": f"{e.account.name} ({e.account.owner.name} - {e.account.account_type.name})",
+            "account": e.account.name,
             "category": e.category.name,
             "subcategory": e.subcategory.name if e.subcategory else None,
             "movement_type": e.movement_type.name,
@@ -197,3 +251,13 @@ def serialize_entry(entry):
         "description": entry.description,
         "date": entry.date,
     }
+
+@event.listens_for(Entry, "before_insert")
+@event.listens_for(Entry, "before_update")
+def validate_entry(mapper, connection, target):
+    if target.movement_type == MovementType.transfer:
+        if not target.destination_account_id:
+            raise ValueError("destination_account_id is required for transfers")
+    else:
+        if target.destination_account_id is not None:
+            raise ValueError("destination_account_id must be NULL for non-transfer movements")

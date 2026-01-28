@@ -3,15 +3,15 @@ from flask_login import UserMixin
 import enum
 
 class MovementType(enum.Enum):
-    payment = "Payment"
-    income = "Income"
-    transfer = "Transfer"
+    payment = 'Payment'
+    income = 'Income'
+    transfer = 'Transfer'
 
 class AccountType(enum.Enum):
-    cash = "Cash"
-    bank = "Bank"
-    insurance = "Insurance"
-    investment = "Investment"
+    cash = 'Cash'
+    bank = 'Bank'
+    insurance = 'Insurance'
+    investment = 'Investment'
 
 # ------------------------
 # Authentication user

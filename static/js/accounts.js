@@ -2,11 +2,11 @@ let accounts = [];
 let account_types = [];
 
 async function initAccountsFields(tabname = "accounts") {
+    const response = await fetch('/accounts');
+    if (!response.ok) throw new Error('Failed to fetch accounts');
+    accounts = await response.json();
     
     if(tabname === "accounts"){
-        const response = await fetch('/accounts');
-        if (!response.ok) throw new Error('Failed to fetch accounts');
-        accounts = await response.json();
         populateAccountsTable(accounts);
 
         const removeAccountSelect = document.getElementById("remove-account-select");
@@ -23,6 +23,54 @@ async function initAccountsFields(tabname = "accounts") {
         fillSelect(accountTypeSelect, account_types, "type", "type", "Select account type", true);
         const editAccountTypeSelect = document.getElementById("edit-account-type-select");
         fillSelect(editAccountTypeSelect, account_types, "type", "type", "Select account type", true);
+    }
+
+    if(tabname === "entries"){
+        const addEntryAccountSelect = document.getElementById("add-entry-account-select");
+        const addEntryDestinationAccountSelect = document.getElementById("add-entry-destination-account-select");
+        fillSelect(addEntryAccountSelect, accounts, "id", "name", "Select account");
+        
+        addEntryAccountSelect.addEventListener("change", ()=>{
+            if(addEntryDestinationAccountSelect){
+                const destinationAccounts = accounts.filter(a => a.id != addEntryAccountSelect.value);
+                fillSelect(addEntryDestinationAccountSelect, destinationAccounts, "id", "name", "Select Destination account");
+            }
+        });
+        
+        const addEntryMovementType = document.getElementById("add-entry-movement-type");
+        addEntryMovementType.addEventListener("change", ()=>{
+            if(addEntryDestinationAccountSelect){
+                const destinationAccounts = accounts.filter(a => a.id != addEntryAccountSelect.value);
+                fillSelect(addEntryDestinationAccountSelect, destinationAccounts, "id", "name", "Select Destination account", false, true);
+                
+                if(addEntryMovementType){
+                    const movementType = addEntryMovementType.value;
+                    addEntryDestinationAccountSelect.style.display = movementType === "Transfer" && accounts.length > 1 ? "inline" : "none";
+                }
+            }
+        });
+
+        const addEntryOwnerInput = document.getElementById("add-entry-owner-input");
+        addEntryAccountSelect.addEventListener("change", () =>{
+            const accountId = addEntryAccountSelect.value;    
+            if (!accountId) return;
+            const account = accounts.find(a => a.id == accountId);
+            if (!account) return;
+            addEntryOwnerInput.value = account.owner;
+        });
+
+        const editEntryAccountSelect = document.getElementById("edit-entry-account-select");
+        fillSelect(editEntryAccountSelect, accounts, "id", "name", "Select account");
+        const editEntryOwnerInput = document.getElementById("edit-entry-owner-input");
+        editEntryAccountSelect.addEventListener("change", () =>{
+            const accountId = editEntryAccountSelect.value;    
+            if (!accountId) return;
+            console.log("Selected account ID:", accountId);
+            const account = accounts.find(a => a.id == accountId);
+            if (!account) return;
+            console.log("Found account:", account);
+            editEntryOwnerInput.value = account.owner;
+        });
     }
 }
 

@@ -1,2 +1,65 @@
 <h2>Entries</h2>
 
+<!-- ADD ENTRY -->
+<h3>Add Entry</h3>
+
+<select id="add-entry-movement-type"></select>
+<select id="add-entry-account-select"></select>
+<input type="text" id="add-entry-owner-input" placeholder="Owner" disabled="true"/>
+<select id="add-entry-destination-account-select" style="display:none"></select>
+<select id="add-entry-category-select"></select>
+<select id="add-entry-subcategory-select"></select>
+<input type="number" id="add-entry-amount" step="0.01" min="=0" placeholder="Amount" />
+<input type="date" id="add-entry-date" />
+<input type="text" id="add-entry-description" placeholder="Description" />
+
+<button id="add-entry-button">Add Entry</button>
+
+<hr/>
+
+<!-- EDIT ENTRY -->
+<h3>Edit Entry</h3>
+
+<select id="edit-entry-select"></select>
+
+<select id="edit-entry-movement-type"></select>
+<select id="edit-entry-account-select"></select>
+<input type="text" id="edit-entry-owner-input" placeholder="Owner" disabled="true"/>
+<select id="edit-entry-destination-account-select" style="display:none"></select>
+<select id="edit-entry-category-select"></select>
+<select id="edit-entry-subcategory-select"></select>
+<input type="number" id="edit-entry-amount" step="0.01" min="=0" placeholder="Amount" />
+<input type="date" id="edit-entry-date" />
+<input type="text" id="edit-entry-description" placeholder="Description" />
+
+<button id="edit-entry-button">Save Changes</button>
+
+<hr/>
+
+
+<!-- REMOVE ENTRY -->
+<h3>Remove Entry</h3>
+
+<select id="remove-entry-select"></select>
+<button id="remove-entry-button">Remove entry</button>
+
+<!-- LIST ENTRIES -->
+<h3>All Entries</h3>
+<button id="get-entries-button">Get Entries</button>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Type</th>
+      <th>Account</th>
+      <th>Destination Account</th>
+      <th>Category</th>
+      <th>Subcategory</th>
+      <th>Amount</th>
+      <th>Description</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody id="entries-tbody"></tbody>
+</table>

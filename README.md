@@ -17,10 +17,7 @@ python app.py
 ```
 
 # TODO
-
-Manage transfer entries
-
-Edit entries
+Filter entries api 
 
 Scipt for categories, subcategories, accounts and owners setup
 

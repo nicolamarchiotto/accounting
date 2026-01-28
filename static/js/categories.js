@@ -3,11 +3,11 @@ let categories = [];
 
 async function initCategoriesFields(tabname = "categories") {
 
+    const categories_res = await fetch("/categories");
+    if (!categories_res.ok) throw new Error('Failed to fetch categories');
+    categories = await categories_res.json();
+    
     if(tabname === "categories"){
-        const categories_res = await fetch("/categories");
-        if (!categories_res.ok) throw new Error('Failed to fetch categories');
-        categories = await categories_res.json();
-        
         const editCategorySelect = document.getElementById("edit-category-select");
         fillSelect(editCategorySelect, categories, "id", "name", "Select category");
         const removeCategorySelect = document.getElementById("remove-category-select");
@@ -35,6 +35,55 @@ async function initCategoriesFields(tabname = "categories") {
             );
         }
         populateCategoriesTable(categories);
+    }
+
+    if(tabname === "entries"){
+        const addEntryCategorySelect = document.getElementById("add-entry-category-select");
+        fillSelect(addEntryCategorySelect, categories, "id", "name", "Select category");
+
+        onEditCategorySubcategoryChange("add-entry-category-select", "add-entry-subcategory-select")
+        
+        const addEntrySubcategorySelect = document.getElementById("add-entry-subcategory-select");
+        if(addEntryCategorySelect && addEntrySubcategorySelect){
+            addEntryCategorySelect.addEventListener("change", () =>
+                onEditCategorySubcategoryChange("add-entry-category-select", "add-entry-subcategory-select")
+            );
+        }
+
+        const editEntryCategorySelect = document.getElementById("edit-entry-category-select");
+        fillSelect(editEntryCategorySelect, categories, "id", "name", "Select category");
+        
+        onEditCategorySubcategoryChange("edit-entry-category-select", "edit-entry-subcategory-select")
+        
+        const editEntrySubcategorySelect = document.getElementById("edit-entry-subcategory-select");
+        if(editEntryCategorySelect && editEntrySubcategorySelect){
+            editEntryCategorySelect.addEventListener("change", () =>
+                onEditCategorySubcategoryChange("edit-entry-category-select", "edit-entry-subcategory-select")
+            );
+        }
+
+        const editEntrySelect = document.getElementById("edit-entry-select");
+        editEntrySelect.addEventListener("change", ()=>{
+            const entryId = editEntrySelect.value;
+            if (!entryId) return;
+            const entry = entries.find(e => e.id == entryId);
+            if (!entry) return;
+
+            document.getElementById("edit-entry-movement-type").value = movement_types.find(mt => mt === entry.movement_type) || -1;
+            
+            document.getElementById("edit-entry-account-select").value = entry.account.id;
+            document.getElementById("edit-entry-owner-input").value = entry.owner.name;
+            document.getElementById("edit-entry-destination-account-select").value = entry.destination_account?.id || -1;
+            document.getElementById("edit-entry-category-select").value = entry.category.id;
+            if(entry.category.id){
+                onEditCategorySubcategoryChange("edit-entry-category-select", "edit-entry-subcategory-select");
+                document.getElementById("edit-entry-subcategory-select").value = entry.subcategory?.id || "";
+            }
+
+            document.getElementById("edit-entry-amount").value = entry.amount;
+            document.getElementById("edit-entry-date").value = entry.date;
+            document.getElementById("edit-entry-description").value = entry.description;
+        });
     }
 }
 

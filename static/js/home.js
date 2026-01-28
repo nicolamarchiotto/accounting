@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initOwnersFields(tab);
         initAccountsFields(tab);
         initCategoriesFields(tab);
+        initEntriesFields(tab)
 
         // Update active tab style
         document.querySelectorAll("#tabs button").forEach(btn => btn.classList.remove("active"));
