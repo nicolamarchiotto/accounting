@@ -43,9 +43,29 @@
 <select id="remove-entry-select"></select>
 <button id="remove-entry-button">Remove entry</button>
 
-<!-- LIST ENTRIES -->
-<h3>All Entries</h3>
-<button id="get-entries-button">Get Entries</button>
+<!-- GET ENTRIES -->
+<h3>Get Entries</h3>
+
+<select id="filter-entries-movement-type"></select>
+
+<select id="filter-entries-account-select"></select>
+
+<select id="filter-entries-category-select"></select>
+
+<select id="filter-entries-subcategory-select"></select>
+
+<input type="number" id="filter-entries-amount-min" step="0.01" placeholder="Min amount" />
+<input type="number" id="filter-entries-amount-max" step="0.01" placeholder="Max amount" />
+
+<input type="date" id="filter-entries-date-from" />
+<input type="date" id="filter-entries-date-to" />
+
+<input type="text" id="filter-entries-description" placeholder="Description contains..." />
+
+<button id="filter-entries-search-button">Search</button>
+<button id="filter-entries-reset-button">Reset</button>
+
+<hr/>
 
 <table border="1">
   <thead>

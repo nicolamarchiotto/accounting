@@ -10,11 +10,18 @@ async function initEntriesFields(tabname = "entries") {
         fillSelect(addEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
 
         const addEntryDate = document.getElementById("add-entry-date");
+        const filterEntryDateFrom = document.getElementById("filter-entries-date-from");
+        const filterEntryDateTo = document.getElementById("filter-entries-date-to");
         const today = new Date().toISOString().split("T")[0];
         addEntryDate.value = today;
+        filterEntryDateFrom.value = today;
+        filterEntryDateTo.value = today;
         
         const editEntryMovementType = document.getElementById("edit-entry-movement-type");
         fillSelect(editEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
+
+        const filterEntryMovementType = document.getElementById("filter-entries-movement-type");
+        fillSelect(filterEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
 
         loadEntries();
     }
@@ -64,8 +71,10 @@ document.addEventListener("click", async e => {
           description: document.getElementById("add-entry-description").value
         };
 
+        console.log("Add Entry Payload:", payload);
+
         try {
-            await fetch("/entries", {
+            await fetch("/entries/add", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload)
@@ -155,8 +164,22 @@ document.addEventListener("click", async e => {
             alert("Edit entry failed: " + err.message);
         }
     }   
+    
+    if (e.target.id === "filter-entries-search-button") {
+        filterEntries();
+    }
 
-    if (e.target.id === "get-entries-button") {
+    if (e.target.id === "filter-entries-reset-button") {
+        document.querySelectorAll(
+            "#filter-entries-movement-type, #filter-entries-account-select, #filter-entries-destination-account-select, " +
+            "#filter-entries-category-select, #filter-entries-subcategory-select"
+        ).forEach(el => el.value = "");
+
+        document.querySelectorAll(
+            "#filter-entries-amount-min, #filter-entries-amount-max, " +
+            "#filter-entries-date-from, #filter-entries-date-to, #filter-entries-description"
+        ).forEach(el => el.value = "");
+
         loadEntries();
     }
 });
@@ -193,8 +216,19 @@ async function addEntry() {
   loadEntries();
 }
 
-async function loadEntries() {
-  entries = await fetch("/entries").then(r => r.json());
+async function loadEntries(entriesData = null) {
+  let entries = [];
+  if(!entriesData){
+    payload = {}; 
+    const res = await fetch("/entries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload )
+    });
+    entries = await res.json();
+  }else{
+    entries = entriesData;
+  }
 
   const tbody = document.getElementById("entries-tbody");
   tbody.innerHTML = "";
@@ -214,9 +248,8 @@ async function loadEntries() {
   opt_r0.value = -1;
   opt_r0.textContent = `Select Entry Id`;
   removeSelect.appendChild(opt_r0);
-  
 
-  for (const e of entries) {
+  for (const e of entries.items) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${e.id}</td>
@@ -264,4 +297,59 @@ async function editEntry() {
   }
 
   loadEntries();
+}
+
+async function filterEntries() {
+  const payload = {};
+
+  const movementType = document.getElementById("filter-entries-movement-type").value;
+  if (movementType) payload.movement_types = [movementType];
+
+  const accountId = document.getElementById("filter-entries-account-select").value;
+  if (accountId) payload.account_ids = [Number(accountId)];
+
+  const categoryId = document.getElementById("filter-entries-category-select").value;
+  if (categoryId) payload.category_ids = [Number(categoryId)];
+
+  const subCategoryId = document.getElementById("filter-entries-subcategory-select").value;
+  if (subCategoryId) payload.sub_category_ids = [Number(subCategoryId)];
+
+  // ---- amount range ----
+  const minAmount = document.getElementById("filter-entries-amount-min").value;
+  const maxAmount = document.getElementById("filter-entries-amount-max").value;
+
+  if (minAmount || maxAmount) {
+    payload.amount = {};
+    if (minAmount) payload.amount.min = Number(minAmount);
+    if (maxAmount) payload.amount.max = Number(maxAmount);
+  }
+
+  // ---- date range ----
+  const dateFrom = document.getElementById("filter-entries-date-from").value;
+  const dateTo = document.getElementById("filter-entries-date-to").value;
+
+  if (dateFrom || dateTo) {
+    payload.date = {};
+    if (dateFrom) payload.date.from = dateFrom;
+    if (dateTo) payload.date.to = dateTo;
+  }
+
+  // ---- description ----
+  const description = document.getElementById("filter-entries-description").value.trim();
+  if (description) payload.description = description;
+
+  const res = await fetch("/entries", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Search failed");
+    return;
+  }
+
+  loadEntries(data);
 }

@@ -1,6 +1,7 @@
 from extensions import db
 from flask_login import UserMixin
 import enum
+from sqlalchemy import Date
 
 class MovementType(enum.Enum):
     payment = 'Payment'
@@ -109,7 +110,7 @@ class Entry(db.Model):
     amount = db.Column(db.Float, nullable=False)
     movement_type = db.Column(db.Enum(MovementType), nullable=False)
     description = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(10), nullable=False)
+    date = db.Column(Date, nullable=False)
 
     owner = db.relationship("Owner")
 

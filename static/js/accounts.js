@@ -71,6 +71,9 @@ async function initAccountsFields(tabname = "accounts") {
             console.log("Found account:", account);
             editEntryOwnerInput.value = account.owner;
         });
+
+        const filterEntryAccountSelect = document.getElementById("filter-entries-account-select");
+        fillSelect(filterEntryAccountSelect, accounts, "id", "name", "Select account");
     }
 }
 

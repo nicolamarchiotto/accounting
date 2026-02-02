@@ -5,19 +5,18 @@ from flask_login import (
 from models import Entry, Account, Owner, MovementType, Category, SubCategory
 from extensions import db
 from datetime import datetime
-from sqlalchemy import event
+from sqlalchemy import event, or_
 
 entries_bp = Blueprint("entries", __name__)
 
 # POST /entries
-@entries_bp.route("/entries", methods=["POST"])
+@entries_bp.route("/entries/add", methods=["POST"])
 @login_required
 def add_entry():
     data = request.json
 
     # Extract owner name and find the owner
     data = request.json
-
 
     # Extract account_id and verify account belongs to owner
     account_id = data.get("account_id")
@@ -142,54 +141,80 @@ def edit_entry(entry_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-# GET /entries
-@entries_bp.route("/entries", methods=["GET"])
-@login_required
-def get_entries():
-    entries = Entry.query.all()
-    return jsonify([serialize_entry(e) for e in entries])
-
-
-@entries_bp.route("/entries/filter", methods=["POST"])
+@entries_bp.route("/entries", methods=["POST"])
 @login_required
 def filter_entries():
     data = request.json or {}
-
+    if( not data ):
+        data = {
+            "owners": [],
+            "account_ids": [],
+            "movement_types": [],
+            "category_ids": [],
+            "subcategory_ids": [],
+            "date": {"from": None, "to": None},
+            "amount": {"min": None, "max": None},
+            "description": ""
+        }
+        
     owners = data.get("owners", [])
-    accounts = data.get("accounts", [])
+    account_ids = data.get("account_ids", [])
     movement_types = data.get("movement_types", [])
-    categories = data.get("categories", [])
-    date_from = data.get("date_from")
-    date_to = data.get("date_to")
-
+    category_ids = data.get("category_ids", [])
+    subcategory_ids = data.get("subcategory_ids", [])
+    date = data.get("date", {"from": None, "to": None})
+    date_from = date.get("from")
+    date_to = date.get("to")
+    amount = data.get("amount", {"min": None, "max": None})
+    amount_min = amount.get("min")
+    amount_max = amount.get("max")
+    description = data.get("description", "").strip()
+    
     # Base query
-    query = Entry.query.join(Account).join(Owner).join(Category)
+    query = Entry.query
 
     # Filter owners
-    if owners:
+    if owners and owners != []:
         query = query.filter(Account.owner_id.in_(owners))
 
     # Filter accounts
-    if accounts:
-        query = query.filter(Entry.account_id.in_(accounts))
+    if account_ids and account_ids != []:
+        query = query.filter(
+            or_(
+                Entry.account_id.in_(account_ids),
+                Entry.destination_account_id.in_(account_ids)
+            )
+        )
     else:
         # If accounts empty but owners provided, filter accounts by owners
-        if owners:
+        if owners and owners != []:
             query = query.filter(Account.owner_id.in_(owners))
-        # else no filter needed here (all accounts)
-
+        
     # Filter movement_types
-    if movement_types:
-        # Convert strings to MovementType enum values
+    if movement_types and movement_types != []:
         try:
-            movement_enums = [MovementType[mt] for mt in movement_types]
+            movement_enums = [MovementType[mt.lower()] for mt in movement_types]
             query = query.filter(Entry.movement_type.in_(movement_enums))
-        except KeyError:
-            return jsonify({"error": "Invalid movement_type in filter"}), 400
+        except KeyError as e:
+            return jsonify({"error": f"Invalid movement_type: {e.args[0]}"}), 400
 
     # Filter categories
-    if categories:
-        query = query.filter(Entry.category_id.in_(categories))
+    if category_ids and category_ids != []:
+        query = query.filter(Entry.category_id.in_(category_ids))
+
+    if subcategory_ids and subcategory_ids != []:
+        query = query.filter(Entry.subcategory_id.in_(subcategory_ids))
+
+    # Filter description keywords
+    if description:
+        words = [w.strip() for w in description.split() if w.strip()]
+
+        if words:
+            query = query.filter(
+                or_(
+                    *[Entry.description.ilike(f"%{word}%") for word in words]
+                )
+            )
 
     # Filter date range
     if date_from:
@@ -205,8 +230,21 @@ def filter_entries():
         except Exception:
             return jsonify({"error": "Invalid date_to format"}), 400
 
-    entries = query.all()
+    # Filter amount range
+    if amount_min is not None:
+        try:
+            min_val = float(amount_min)
+            query = query.filter(Entry.amount >= min_val)
+        except ValueError:
+            return jsonify({"error": "Invalid amount min value"}), 400
+    if amount_max is not None:
+        try:
+            max_val = float(amount_max)
+            query = query.filter(Entry.amount <= max_val)
+        except ValueError:
+            return jsonify({"error": "Invalid amount max value"}), 400
 
+    entries = query.all()
     result = []
     for e in entries:
         result.append({
@@ -219,7 +257,17 @@ def filter_entries():
             "description": e.description,
             "date": e.date.isoformat() if hasattr(e.date, "isoformat") else e.date
         })
-    return jsonify(result)
+
+    page = data.get("page", 1)
+    per_page = data.get("per_page", 20)
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return jsonify({
+        "items": [serialize_entry(e) for e in pagination.items],
+        "total": pagination.total,
+        "page": page
+    })
 
 
 @entries_bp.route("/movement_types", methods=["GET"])

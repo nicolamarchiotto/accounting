@@ -84,6 +84,18 @@ async function initCategoriesFields(tabname = "categories") {
             document.getElementById("edit-entry-date").value = entry.date;
             document.getElementById("edit-entry-description").value = entry.description;
         });
+
+        const filterEntryCategorySelect = document.getElementById("filter-entries-category-select");
+        fillSelect(filterEntryCategorySelect, categories, "id", "name", "Select category");
+ 
+        const filterEntrySubcategorySelect = document.getElementById("filter-entries-subcategory-select");
+        fillSelect(filterEntrySubcategorySelect, [], "id", "name", "Select subcategory");
+        
+        if(filterEntryCategorySelect && filterEntrySubcategorySelect){
+            filterEntryCategorySelect.addEventListener("change", () =>
+                onEditCategorySubcategoryChange("filter-entries-category-select", "filter-entries-subcategory-select")
+            );
+        }
     }
 }
 
