@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import (
     login_required
 )
-from models import Account, AccountType, Entry
+from models import Account, AccountType, Entry, Owner
 from extensions import db
 
 accounts_bp = Blueprint("accounts", __name__)
@@ -13,6 +13,15 @@ def accounts():
     data = request.json
 
     owner_id = data.get("owner_id")
+    if not owner_id:
+        owner_name = data.get("owner_name")
+        if not owner_name:
+            return jsonify({"error": "owner_id or owner_name is required"}), 400
+        owner = Owner.query.filter_by(name=owner_name).first()
+        if not owner:
+            return jsonify({"error": "Owner not found"}), 400
+        owner_id = owner.id
+
     account_type_str = data.get("account_type")
     account_name = data.get("name")
 

@@ -146,6 +146,13 @@ def remove_subcategory(subcategory_id):
 def subcategories():
     name = request.json.get("name")
     category_id = request.json.get("category_id")
+    if not category_id:
+        category_name = request.json.get("category_name")
+        category = Category.query.filter_by(name=category_name).first()
+        if not category:
+            return jsonify({"error": "Category not found"}), 404
+        category_id = category.id
+
     if not name or not category_id:
         return jsonify({"error": "Name and category_id required"}), 400
     
