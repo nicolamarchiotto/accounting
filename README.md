@@ -17,8 +17,5 @@ python app.py
 ```
 
 # TODO
-Filter entries api 
-
-Scipt for categories, subcategories, accounts and owners setup
 
 Entries Fronted
