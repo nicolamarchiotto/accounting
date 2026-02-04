@@ -18,7 +18,7 @@ def get_categories():
         # Check if category already exists
         existing = Category.query.filter_by(name=name).first()
         if existing:
-            return jsonify({"error": "Category already exists"}), 400
+            return jsonify({"error": "Category already exists"}), 409
         
         category = Category(name=name)
         db.session.add(category)
@@ -159,7 +159,7 @@ def subcategories():
     # Check if category already exists
     existing = SubCategory.query.filter_by(name=name, category_id=category_id).first()
     if existing:
-        return jsonify({"error": "Category already exists"}), 400
+        return jsonify({"error": "Category already exists"}), 409
     
     subcategory = SubCategory(name=name, category_id=category_id)
     db.session.add(subcategory)

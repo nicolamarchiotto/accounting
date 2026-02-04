@@ -24,7 +24,7 @@ def add_owner():
     # Check if owner already exists
     existing_owner = Owner.query.filter_by(name=name).first()
     if existing_owner:
-        return jsonify({"error": "Owner already exists"}), 400
+        return jsonify({"error": "Owner already exists"}), 409
 
     new_owner = Owner(name=name)
     db.session.add(new_owner)

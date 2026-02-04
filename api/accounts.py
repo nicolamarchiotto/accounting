@@ -19,7 +19,7 @@ def accounts():
             return jsonify({"error": "owner_id or owner_name is required"}), 400
         owner = Owner.query.filter_by(name=owner_name).first()
         if not owner:
-            return jsonify({"error": "Owner not found"}), 400
+            return jsonify({"error": "Owner not found for specified owner_name"}), 400
         owner_id = owner.id
 
     account_type_str = data.get("account_type")
@@ -34,7 +34,7 @@ def accounts():
         return jsonify({"error": "Invalid account type"}), 400
 
     if(Account.query.filter_by(name=account_name).first()):
-        return jsonify({"error": "Account name already exists"}), 400
+        return jsonify({"error": "Account name already exists"}), 409
 
     account = Account(
         name=account_name,

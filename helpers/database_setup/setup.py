@@ -31,20 +31,28 @@ def add_owner(name, endpoint):
 
     if response.status_code == 200 or response.status_code == 201:
         print(f"✅ Added owner: {name}")
-    elif response.status_code == 400:
-        print(f"⚠️ Skipped '{name}': {response.json().get('error')}")
+    elif response.status_code == 409:
+        print(f"⚠️ Skipped owner '{name}': {response.json().get('error')}")
     else:
-        print(f"❌ Error adding '{name}': {response.status_code} {response.text}")
+        print(f"❌ Error adding owner '{name}': {response.status_code} {response.text}")
         return False
     
     return True
 
 def add_account(account_data, endpoint):
-    owner_name = account_data.get("owner_name")
     name = account_data.get("name")
+    owner_name = account_data.get("owner_name")
     account_type_str = account_data.get("account_type_str")
     if not owner_name or not name or not account_type_str:
         print(f"❌ Missing data for account: {account_data}")
+        return False
+    
+    allowed_types = {t.value for t in AccountType}
+    if account_type_str not in allowed_types:
+        print(
+            f"❌ Invalid account_type_str '{account_type_str}'. "
+            f"Allowed values: {', '.join(allowed_types)}"
+        )
         return False
     
     response = session.post(
@@ -52,16 +60,16 @@ def add_account(account_data, endpoint):
         json={
             "name": name,
             "owner_name": owner_name,
-            "account_type_str": account_type_str
+            "account_type": account_type_str
         }
     )
 
     if response.status_code == 200 or response.status_code == 201:
-        print(f"✅ Added owner: {owner_name}")
-    elif response.status_code == 400:
-        print(f"⚠️ Skipped '{owner_name}': {response.json().get('error')}")
+        print(f"✅ Added account: {name}")
+    elif response.status_code == 409:
+        print(f"⚠️ Skipped account '{name}': {response.json().get('error')}")
     else:
-        print(f"❌ Error adding '{owner_name}': {response.status_code} {response.text}")
+        print(f"❌ Error adding account '{name}': {response.status_code} {response.text}")
         return False
     
     return True
@@ -81,10 +89,10 @@ def add_category(category_data, category_endpoint, subcategory_endpoint):
 
     if response.status_code == 200 or response.status_code == 201:
         print(f"✅ Added catgory: {name}")
-    elif response.status_code == 400:
-        print(f"⚠️ Skipped '{name}': {response.json().get('error')}")
+    elif response.status_code == 409:
+        print(f"⚠️ Skipped category '{name}': {response.json().get('error')}")
     else:
-        print(f"❌ Error adding '{name}': {response.status_code} {response.text}")
+        print(f"❌ Error adding category '{name}': {response.status_code} {response.text}")
         return False
 
     subcategories = category_data.get("sub_categories", [])
@@ -104,10 +112,10 @@ def add_category(category_data, category_endpoint, subcategory_endpoint):
 
         if subcat_response.status_code == 200 or subcat_response.status_code == 201:
             print(f"    ✅ Added subcategory: {subcat_name}")
-        elif subcat_response.status_code == 400:
-            print(f"    ⚠️ Skipped '{subcat_name}': {subcat_response.json().get('error')}")
+        elif subcat_response.status_code == 409:
+            print(f"    ⚠️ Skipped subcategory '{subcat_name}': {subcat_response.json().get('error')}")
         else:
-            print(f"    ❌ Error adding '{subcat_name}': {subcat_response.status_code} {subcat_response.text}")
+            print(f"    ❌ Error adding subcategory '{subcat_name}': {subcat_response.status_code} {subcat_response.text}")
             return False
 
     return True
