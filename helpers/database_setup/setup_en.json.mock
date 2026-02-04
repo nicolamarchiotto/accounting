@@ -1,0 +1,148 @@
+{
+    "api_base_url": "http://localhost:5000",
+    "user": {
+        "username": "username",
+        "password": "password"
+    },
+    "categories": [
+        {
+            "name": "Food & Beverages",
+            "sub_categories": [
+                { "name": "Bars & Cafés" },
+                { "name": "Restaurants & Fast Food" },
+                { "name": "Groceries" }
+            ]
+        },
+        {
+            "name": "Shopping",
+            "sub_categories": [
+                { "name": "Clothing & Shoes" },
+                { "name": "Pets" },
+                { "name": "Beauty & Wellness" },
+                { "name": "Stationery & Tools" },
+                { "name": "Home & Garden" },
+                { "name": "Electronics" },
+                { "name": "Pharmacy" },
+                { "name": "Children" },
+                { "name": "Jewelry & Accessories" },
+                { "name": "Gifts" },
+                { "name": "Leisure" }
+            ]
+        },
+        {
+            "name": "Home",
+            "sub_categories": [
+                { "name": "Rent" },
+                { "name": "Property Insurance" },
+                { "name": "Energy & Utilities" },
+                { "name": "Maintenance" },
+                { "name": "Mortgage" },
+                { "name": "Services" }
+            ]
+        },
+        {
+            "name": "Transportation",
+            "sub_categories": [
+                { "name": "Taxi" },
+                { "name": "Public Transport" },
+                { "name": "Travel" },
+                { "name": "Business Travel" }
+            ]
+        },
+        {
+            "name": "Vehicles",
+            "sub_categories": [
+                { "name": "Vehicle Insurance" },
+                { "name": "Fuel" },
+                { "name": "Leasing" },
+                { "name": "Vehicle Maintenance" },
+                { "name": "Rentals" },
+                { "name": "Parking" }
+            ]
+        },
+        {
+            "name": "Entertainment",
+            "sub_categories": [
+                { "name": "Alcohol & Tobacco" },
+                { "name": "Beauty & Wellness" },
+                { "name": "Culture & Sports Events" },
+                { "name": "Donations & Charity" },
+                { "name": "Events" },
+                { "name": "Education & Development" },
+                { "name": "Hobbies" },
+                { "name": "Books & Subscriptions" },
+                { "name": "Lotteries & Gambling" },
+                { "name": "Health" },
+                { "name": "Sports & Fitness" },
+                { "name": "TV & Streaming" },
+                { "name": "Holidays & Hotels" }
+            ]
+        },
+        {
+            "name": "Communication & IT",
+            "sub_categories": [
+                { "name": "Internet" },
+                { "name": "Postal Services" },
+                { "name": "Software, Apps & Games" },
+                { "name": "Telephone" }
+            ]
+        },
+        {
+            "name": "Financial Expenses",
+            "sub_categories": [
+                { "name": "Family Allowance" },
+                { "name": "Insurance" },
+                { "name": "Consulting" },
+                { "name": "Fines" },
+                { "name": "Loans & Interest" },
+                { "name": "Fees & Charges" },
+                { "name": "Taxes" }
+            ]
+        },
+        {
+            "name": "Investments",
+            "sub_categories": [
+                { "name": "Real Estate" },
+                { "name": "Movable Assets" },
+                { "name": "Financial Investments" },
+                { "name": "Collections" },
+                { "name": "Savings" }
+            ]
+        },
+        {
+            "name": "Income",
+            "sub_categories": [
+                { "name": "Family Allowance" },
+                { "name": "Vouchers & Coupons" },
+                { "name": "Rental Income" },
+                { "name": "Interest & Dividends" },
+                { "name": "Lotteries & Gambling" },
+                { "name": "Loans & Rentals" },
+                { "name": "Shares & Contributions" },
+                { "name": "Gifts" },
+                { "name": "Refunds (Taxes, Purchases)" },
+                { "name": "Salary" },
+                { "name": "Sales" }
+            ]
+        },
+        {
+            "name": "Other",
+            "sub_categories": [
+                { "name": "Missing" }
+            ]
+        }
+    ],
+    "owners": ["Owner1", "Owner2", "Owner3"],
+    "accounts": [
+        {
+            "name": "My Bank",
+            "owner_name": "Owner1",
+            "account_type_str": "Bank"
+        },
+        {
+            "name": "My Cash",
+            "owner_name": "Owner2",
+            "account_type_str": "Cash"
+        }
+    ]
+}

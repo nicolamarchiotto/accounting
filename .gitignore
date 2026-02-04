@@ -1,7 +1,6 @@
-secret.key
+helpers/database_setup/setup.json
 venv
 .env
 auth/__pycache__
 api/__pycache__
 __pycache__
-instance/*

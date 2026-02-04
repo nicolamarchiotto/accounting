@@ -1,0 +1,148 @@
+{
+    "api_base_url": "http://localhost:5000",
+    "user": {
+        "username": "username",
+        "password": "password"
+    },
+    "categories": [
+        {
+            "name": "Cibo & Bevande",
+            "sub_categories": [
+                { "name": "Bar & Locali" },
+                { "name": "Ristoranti & Fast Food" },
+                { "name": "Spesa" }
+            ]
+        },
+        {
+            "name": "Shopping",
+            "sub_categories": [
+                { "name": "Abbigliamento & Scarpe" },
+                { "name": "Animali domestici" },
+                { "name": "Bellezza & Benessere" },
+                { "name": "Cancelleria & Utensili" },
+                { "name": "Casa & Giardino" },
+                { "name": "Elettronica" },
+                { "name": "Farmacia" },
+                { "name": "Figli" },
+                { "name": "Gioelli & Accessori" },
+                { "name": "Regali" },
+                { "name": "Tempo libero" }
+            ]
+        },
+        {
+            "name": "Casa",
+            "sub_categories": [
+                { "name": "Affitto" },
+                { "name": "Assicurazione immobili" },
+                { "name": "Energia & Utenze" },
+                { "name": "Manutenzione" },
+                { "name": "Mutuo" },
+                { "name": "Servizi" }
+            ]
+        },
+        {
+            "name": "Trasporti",
+            "sub_categories": [
+                { "name": "Taxi" },
+                { "name": "Trasporto pubblico" },
+                { "name": "Viaggi" },
+                { "name": "Viaggi di lavoro" }
+            ]
+        },
+        {
+            "name": "Veicoli",
+            "sub_categories": [
+                { "name": "Assicurazione veicoli" },
+                { "name": "Carburante" },
+                { "name": "Leasing" },
+                { "name": "Manutenzione veicoli" },
+                { "name": "Noleggi" },
+                { "name": "Parcheggio" }
+            ]
+        },
+        {
+            "name": "Intrattenimento",
+            "sub_categories": [
+                { "name": "Alcolici & Tabacco" },
+                { "name": "Bellezza & Benessere" },
+                { "name": "Cultura & Eventi sportivi" },
+                { "name": "Donazioni, Carità" },
+                { "name": "Eventi" },
+                { "name": "Formazione & Sviluppo" },
+                { "name": "Hobby" },
+                { "name": "Libri & Abbonamenti" },
+                { "name": "Lotterie & Gioco d'azzardo" },
+                { "name": "Salute" },
+                { "name": "Sport & Fitness" },
+                { "name": "TV & Streaming" },
+                { "name": "Vacanze & Alberghi" }
+            ]
+        },
+        {
+            "name": "Comunicazione, PC",
+            "sub_categories": [
+                { "name": "Internet" },
+                { "name": "Servizi postali" },
+                { "name": "Software, App & Giochi" },
+                { "name": "Telefono" }
+            ]
+        },
+        {
+            "name": "Spese finanziarie",
+            "sub_categories": [
+                { "name": "Assegno familiare" },
+                { "name": "Assicurazioni" },
+                { "name": "Consulenza" },
+                { "name": "Multe" },
+                { "name": "Prestiti & Interessi" },
+                { "name": "Tariffe, tasse" },
+                { "name": "Tasse" }
+            ]
+        },
+        {
+            "name": "Investimenti",
+            "sub_categories": [
+                { "name": "Beni immobili" },
+                { "name": "Beni mobili" },
+                { "name": "Investimenti finanziari" },
+                { "name": "Riscossioni" },
+                { "name": "Risparmi" }
+            ]
+        },
+        {
+            "name": "Entrate",
+            "sub_categories": [
+                { "name": "Assegno familiare" },
+                { "name": "Buoni & Coupon" },
+                { "name": "Entrate da affitto" },
+                { "name": "Interessi & Dividendi" },
+                { "name": "Lotterie & Gioco d'azzardo" },
+                { "name": "Prestiti & Noleggi" },
+                { "name": "Quote & Contributi" },
+                { "name": "Regali" },
+                { "name": "Rimborsi (tasse, acquisti)" },
+                { "name": "Stipendio" },
+                { "name": "Vendite" }
+            ]
+        },
+        {
+            "name": "Altro",
+            "sub_categories": [
+                { "name": "Mancante" }
+            ]
+        }
+    ],
+    "owners": ["Owner1", "Owner2", "Owner3"],
+    "accounts": [
+        {
+            "name": "My Bank",
+            "owner_name": "Owner1",
+            "account_type_str": "Bank"
+        },
+        {
+            "name": "My Cash",
+            "owner_name": "Owner2",
+            "account_type_str": "Cash"
+        }
+    ]
+}
