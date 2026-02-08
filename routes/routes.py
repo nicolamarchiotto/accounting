@@ -29,7 +29,6 @@ def login():
 @routes_bp.route("/home")
 @login_required
 def home():
-    print("Current user authenticated:", current_user.is_authenticated)
     if not current_user.is_authenticated:
         return redirect(url_for("routes.login"))
     return render_template("home.html")
