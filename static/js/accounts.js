@@ -45,7 +45,7 @@ async function initAccountsFields(tabname = "accounts") {
                 
                 if(addEntryMovementType){
                     const movementType = addEntryMovementType.value;
-                    addEntryDestinationAccountSelect.style.display = movementType === "Transfer" && accounts.length > 1 ? "inline" : "none";
+                    addEntryDestinationAccountSelect.style.display = movementType === movement_type_transfer && accounts.length > 1 ? "inline" : "none";
                 }
             }
         });
@@ -74,6 +74,9 @@ async function initAccountsFields(tabname = "accounts") {
 
         const filterEntryAccountSelect = document.getElementById("filter-entries-account-select");
         fillSelect(filterEntryAccountSelect, accounts, "id", "name", "Select account");
+
+        const aggregateEntryAccountSelect = document.getElementById("aggregate-entries-account-select");
+        fillSelect(aggregateEntryAccountSelect, accounts, "id", "name", "Select account");
     }
 }
 

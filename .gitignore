@@ -1,4 +1,4 @@
-helpers/database_setup/setup.json
+helpers/postgres_setup/tables_setup/setup.json
 venv
 .env
 auth/__pycache__

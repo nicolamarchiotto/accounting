@@ -83,3 +83,30 @@
   </thead>
   <tbody id="entries-tbody"></tbody>
 </table>
+
+
+<!-- AGGREGATE ENTRIES -->
+<h3>Aggregate Entries</h3>
+
+<select id="aggregate-entries-movement-type"></select>
+
+<select id="aggregate-entries-account-select"></select>
+
+<select id="aggregate-entries-category-select"></select>
+
+<select id="aggregate-entries-subcategory-select"></select>
+
+<input type="number" id="aggregate-entries-amount-min" step="0.01" placeholder="Min amount" />
+<input type="number" id="aggregate-entries-amount-max" step="0.01" placeholder="Max amount" />
+
+<input type="date" id="aggregate-entries-date-from" />
+<input type="date" id="aggregate-entries-date-to" />
+
+<input type="text" id="aggregate-entries-description" placeholder="Description contains..." />
+
+<button id="aggregate-entries-search-button">Aggregate</button>
+<button id="aggregate-entries-reset-button">Reset</button>
+
+<hr/>
+
+<input type="number" id="aggregate-entries-amount-result" disabled="true" placeholder="Aggregated Amount" />

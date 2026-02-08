@@ -4,7 +4,7 @@ import enum
 from sqlalchemy import Date
 
 class MovementType(enum.Enum):
-    payment = 'Payment'
+    expense = 'Expense'
     income = 'Income'
     transfer = 'Transfer'
 
@@ -104,7 +104,7 @@ class Entry(db.Model):
     account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=False)
     destination_account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=True)
 
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
     sub_category_id = db.Column(db.Integer, db.ForeignKey("subcategories.id"), nullable=True)
 
     amount = db.Column(db.Float, nullable=False)

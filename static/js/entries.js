@@ -1,27 +1,106 @@
 let movement_types = [];
+let movement_type_transfer = "";
 
 async function initEntriesFields(tabname = "entries") {
-    const response = await fetch('/movement_types');
-    if (!response.ok) throw new Error('Failed to movement types');
-    movement_types = await response.json();
+  const response = await fetch('/movement_types');
+  if (!response.ok) throw new Error('Failed to movement types');
+  movement_types = await response.json();
     
     if(tabname === "entries"){
+        
+        movement_type_transfer = movement_types[2];
+
         const addEntryMovementType = document.getElementById("add-entry-movement-type");
         fillSelect(addEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
+
+        addEntryMovementType.addEventListener("change", () =>
+          {
+            const addEntryCategorySelect = document.getElementById("add-entry-category-select");
+            const addEntrySubcategorySelect = document.getElementById("add-entry-subcategory-select");
+
+            if(addEntryMovementType.value === movement_type_transfer){
+              addEntryCategorySelect.style.display = "none";
+              addEntrySubcategorySelect.style.display = "none";
+              addEntryCategorySelect.value = "";
+              addEntrySubcategorySelect.value = "";
+            } else {
+              addEntryCategorySelect.style.display = "inline";
+              addEntrySubcategorySelect.style.display = "inline";
+            }
+          }
+        );
 
         const addEntryDate = document.getElementById("add-entry-date");
         const filterEntryDateFrom = document.getElementById("filter-entries-date-from");
         const filterEntryDateTo = document.getElementById("filter-entries-date-to");
+        const aggregateEntryDateFrom = document.getElementById("aggregate-entries-date-from");
+        const aggregateEntryDateTo = document.getElementById("aggregate-entries-date-to");
         const today = new Date().toISOString().split("T")[0];
         addEntryDate.value = today;
         filterEntryDateFrom.value = today;
         filterEntryDateTo.value = today;
-        
+        aggregateEntryDateFrom.value = today;
+        aggregateEntryDateTo.value = today;
+
         const editEntryMovementType = document.getElementById("edit-entry-movement-type");
         fillSelect(editEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
 
+        const editEntrySelect = document.getElementById("edit-entry-select");
+        editEntrySelect.addEventListener("change", async ()=>{
+            const entryId = editEntrySelect.value.replace(/^#/, "");
+            if (!entryId) return;
+            
+            payload = {}; 
+            const res = await fetch("/entries", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload )
+            });
+            
+            json = await res.json();
+            entries = json.items || [];
+
+            const entry = entries.find(e => e.id == entryId);
+            if (!entry) return;
+
+            document.getElementById("edit-entry-movement-type").value = movement_types.find(mt => mt === entry.movement_type) || -1;
+            
+            document.getElementById("edit-entry-account-select").value = entry.account.id;
+            document.getElementById("edit-entry-owner-input").value = entry.owner.name;
+            document.getElementById("edit-entry-destination-account-select").value = entry.destination_account?.id || -1;
+            
+            const editEntryCategorySelect = document.getElementById("edit-entry-category-select");
+            const editEntrySubcategorySelect = document.getElementById("edit-entry-subcategory-select");
+            if(entry.category?.id){
+                editEntryCategorySelect.value = entry.category.id;
+                editEntrySubcategorySelect.value = entry.subcategory?.id || "";
+                onEditCategorySubcategoryChange("edit-entry-category-select", "edit-entry-subcategory-select");
+            }
+
+            const editEntryMovementType = document.getElementById("edit-entry-movement-type");
+
+            if(editEntryMovementType.value === movement_type_transfer){
+              editEntryCategorySelect.style.display = "none";
+              editEntrySubcategorySelect.style.display = "none";
+              editEntryCategorySelect.value = "";
+              editEntrySubcategorySelect.value = "";
+            } else {
+              editEntryCategorySelect.style.display = "inline";
+              editEntrySubcategorySelect.style.display = "inline";
+            }
+
+            document.getElementById("edit-entry-amount").value = entry.amount;
+            
+            const d = new Date(entry.date);
+            document.getElementById("edit-entry-date").value = d.toISOString().split("T")[0];
+            document.getElementById("edit-entry-description").value = entry.description;
+        });
+
         const filterEntryMovementType = document.getElementById("filter-entries-movement-type");
         fillSelect(filterEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
+
+        const aggregateEntryMovementType = document.getElementById("aggregate-entries-movement-type");
+        fillSelect(aggregateEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
 
         loadEntries();
     }
@@ -40,15 +119,25 @@ document.addEventListener("click", async e => {
             return;
         }  
         const category = document.getElementById("add-entry-category-select");
-        if(category.value.trim() === "") {
+        if(category.value.trim() === "" && movementType.value !== movement_type_transfer) {
             alert("Category cannot be empty");
             return;
         }
-
-        const amount = document.getElementById("add-entry-amount");
-        if(amount.value.trim() === "" || isNaN(amount.value) || Number(amount.value) <= 0) {
-            alert("Amount must be a positive number");
-            return;
+        
+        const amount = document.getElementById("add-entry-amount"); 
+        if(amount.value.trim() === "" || isNaN(amount.value)) {
+          alert("Amount must be a valid number");
+          return;
+        }else{
+          let amount_numer = Number(amount.value);
+          if(amount_numer == 0){
+            alert("Amount cannot be zero");
+          }else{
+            if(amount_numer < 0){
+              alert("Amount must be a positive number for transfers");
+              return;
+            }
+          }
         }
 
         const date = document.getElementById("add-entry-date");
@@ -58,20 +147,18 @@ document.addEventListener("click", async e => {
         }
         
         const payload = {
-          account_id: document.getElementById("add-entry-account-select").value,
+          account_id: account.value,
           destination_account_id:
-            document.getElementById("add-entry-movement-type").value === "TRANSFER"
+            movementType.value === movement_type_transfer
               ? document.getElementById("add-entry-destination-account-select").value
               : null,
-          movement_type_index: document.getElementById("add-entry-movement-type").selectedIndex -1, // Send index of movement type
-          category_id: document.getElementById("add-entry-category-select").value,
+          movement_type_index:  movementType.selectedIndex -1, // Send index of movement type
+          category_id: category.value || null,
           sub_category_id: document.getElementById("add-entry-subcategory-select").value || null,
-          amount: document.getElementById("add-entry-amount").value,
-          date: document.getElementById("add-entry-date").value,
+          amount: amount.value,
+          date: date.value,
           description: document.getElementById("add-entry-description").value
         };
-
-        console.log("Add Entry Payload:", payload);
 
         try {
             await fetch("/entries/add", {
@@ -90,7 +177,7 @@ document.addEventListener("click", async e => {
                 return data; // Parse JSON if response is OK
             })
             .then(data => {
-                loadEntries();
+              loadEntries();
             })
             .catch(err => {
                 alert("Request failed: " + err.message);
@@ -180,41 +267,40 @@ document.addEventListener("click", async e => {
             "#filter-entries-date-from, #filter-entries-date-to, #filter-entries-description"
         ).forEach(el => el.value = "");
 
+        const filterEntryDateFrom = document.getElementById("filter-entries-date-from");
+        const filterEntryDateTo = document.getElementById("filter-entries-date-to");
+        const today = new Date().toISOString().split("T")[0];
+        filterEntryDateFrom.value = today;
+        filterEntryDateTo.value = today;
+        
         loadEntries();
     }
+    
+    if (e.target.id === "aggregate-entries-search-button") {
+        aggregateEntries();
+    }   
+
+    if (e.target.id === "aggregate-entries-reset-button") {
+        document.querySelectorAll(
+            "#aggregate-entries-movement-type, #aggregate-entries-account-select, #aggregate-entries-destination-account-select, " +
+            "#aggregate-entries-category-select, #aggregate-entries-subcategory-select"
+        ).forEach(el => el.value = "");
+
+        document.querySelectorAll(
+            "#aggregate-entries-amount-min, #aggregate-entries-amount-max, " +
+            "#aggregate-entries-date-from, #aggregate-entries-date-to, #aggregate-entries-description"
+        ).forEach(el => el.value = "");
+
+        const aggregateEntryResult = document.getElementById("aggregate-entries-amount-result");
+        aggregateEntryResult.value = "Aggregated Amount";
+
+        const aggregateEntryDateFrom = document.getElementById("aggregate-entries-date-from");
+        const aggregateEntryDateTo = document.getElementById("aggregate-entries-date-to");
+        const today = new Date().toISOString().split("T")[0];
+        aggregateEntryDateFrom.value = today;
+        aggregateEntryDateTo.value = today;
+    }
 });
-
-
-async function addEntry() {
-  const payload = {
-    owner_id: document.getElementById("add- entry-owner-select")?.value,
-    account_id: document.getElementById("add-entry-account-select").value,
-    destination_account_id:
-      document.getElementById("add-entry-movement-type").value === "TRANSFER"
-        ? document.getElementById("add-entry-destination-account-select").value
-        : null,
-    movement_type: document.getElementById("add-entry-movement-type").value,
-    category_id: document.getElementById("add-entry-category-select").value,
-    sub_category_id: document.getElementById("add-entry-subcategory-select").value || null,
-    amount: document.getElementById("add-entry-amount").value,
-    date: document.getElementById("add-entry-date").value,
-    description: document.getElementById("add-entry-description").value
-  };
-
-  const res = await fetch("/entries", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-  if (!res.ok) {
-    alert(data.error);
-    return;
-  }
-
-  loadEntries();
-}
 
 async function loadEntries(entriesData = null) {
   let entries = [];
@@ -256,7 +342,7 @@ async function loadEntries(entriesData = null) {
       <td>${e.movement_type}</td>
       <td>${e.account.name}</td>
       <td>${e.destination_account?.name || "-"}</td>
-      <td>${e.category.name}</td>
+      <td>${e.category?.name || "-"}</td>
       <td>${e.subcategory?.name || "-"}</td>
       <td>${e.amount}</td>
       <td>${e.description}</td>
@@ -351,5 +437,63 @@ async function filterEntries() {
     return;
   }
 
+  console.log("Filtered entries:", data); // Debug log
+
   loadEntries(data);
+}
+
+async function aggregateEntries() {
+  const payload = {};
+
+  const movementType = document.getElementById("aggregate-entries-movement-type").value;
+  if (movementType) payload.movement_types = [movementType];
+
+  const accountId = document.getElementById("aggregate-entries-account-select").value;
+  if (accountId) payload.account_ids = [Number(accountId)];
+
+  const categoryId = document.getElementById("aggregate-entries-category-select").value;
+  if (categoryId) payload.category_ids = [Number(categoryId)];
+
+  const subCategoryId = document.getElementById("aggregate-entries-subcategory-select").value;
+  if (subCategoryId) payload.sub_category_ids = [Number(subCategoryId)];
+
+  // ---- amount range ----
+  const minAmount = document.getElementById("aggregate-entries-amount-min").value;
+  const maxAmount = document.getElementById("aggregate-entries-amount-max").value;
+
+  if (minAmount || maxAmount) {
+    payload.amount = {};
+    if (minAmount) payload.amount.min = Number(minAmount);
+    if (maxAmount) payload.amount.max = Number(maxAmount);
+  }
+
+  // ---- date range ----
+  const dateFrom = document.getElementById("aggregate-entries-date-from").value;
+  const dateTo = document.getElementById("aggregate-entries-date-to").value;
+
+  if (dateFrom || dateTo) {
+    payload.date = {};
+    if (dateFrom) payload.date.from = dateFrom;
+    if (dateTo) payload.date.to = dateTo;
+  }
+
+  // ---- description ----
+  const description = document.getElementById("aggregate-entries-description").value.trim();
+  if (description) payload.description = description;
+
+  const res = await fetch("/entries/aggregate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Aggregate failed");
+    return;
+  }
+
+  const result_amount = document.getElementById("aggregate-entries-amount-result");
+  result_amount.value = Number(data.total_amount).toFixed(2);
 }

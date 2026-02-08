@@ -62,29 +62,6 @@ async function initCategoriesFields(tabname = "categories") {
             );
         }
 
-        const editEntrySelect = document.getElementById("edit-entry-select");
-        editEntrySelect.addEventListener("change", ()=>{
-            const entryId = editEntrySelect.value;
-            if (!entryId) return;
-            const entry = entries.find(e => e.id == entryId);
-            if (!entry) return;
-
-            document.getElementById("edit-entry-movement-type").value = movement_types.find(mt => mt === entry.movement_type) || -1;
-            
-            document.getElementById("edit-entry-account-select").value = entry.account.id;
-            document.getElementById("edit-entry-owner-input").value = entry.owner.name;
-            document.getElementById("edit-entry-destination-account-select").value = entry.destination_account?.id || -1;
-            document.getElementById("edit-entry-category-select").value = entry.category.id;
-            if(entry.category.id){
-                onEditCategorySubcategoryChange("edit-entry-category-select", "edit-entry-subcategory-select");
-                document.getElementById("edit-entry-subcategory-select").value = entry.subcategory?.id || "";
-            }
-
-            document.getElementById("edit-entry-amount").value = entry.amount;
-            document.getElementById("edit-entry-date").value = entry.date;
-            document.getElementById("edit-entry-description").value = entry.description;
-        });
-
         const filterEntryCategorySelect = document.getElementById("filter-entries-category-select");
         fillSelect(filterEntryCategorySelect, categories, "id", "name", "Select category");
  
@@ -94,6 +71,18 @@ async function initCategoriesFields(tabname = "categories") {
         if(filterEntryCategorySelect && filterEntrySubcategorySelect){
             filterEntryCategorySelect.addEventListener("change", () =>
                 onEditCategorySubcategoryChange("filter-entries-category-select", "filter-entries-subcategory-select")
+            );
+        }
+
+        const aggregateEntryCategorySelect = document.getElementById("aggregate-entries-category-select");
+        fillSelect(aggregateEntryCategorySelect, categories, "id", "name", "Select category");
+ 
+        const aggregateEntrySubcategorySelect = document.getElementById("aggregate-entries-subcategory-select");
+        fillSelect(aggregateEntrySubcategorySelect, [], "id", "name", "Select subcategory");
+        
+        if(aggregateEntryCategorySelect && aggregateEntrySubcategorySelect){
+            aggregateEntryCategorySelect.addEventListener("change", () =>
+                onEditCategorySubcategoryChange("aggregate-entries-category-select", "aggregate-entries-subcategory-select")
             );
         }
     }

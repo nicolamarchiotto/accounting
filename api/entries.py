@@ -5,7 +5,7 @@ from flask_login import (
 from models import Entry, Account, Owner, MovementType, Category, SubCategory
 from extensions import db
 from datetime import datetime
-from sqlalchemy import event, or_
+from sqlalchemy import event, func, and_, or_, case
 
 entries_bp = Blueprint("entries", __name__)
 
@@ -26,11 +26,20 @@ def add_entry():
 
     owner = Owner.query.get(account.owner_id)
     
-    # Extract other required fields
-    category_id = data.get("category_id")
-    category = Category.query.get(category_id)
-    if not category:
-        return jsonify({"error": "Invalid category"}), 400
+    amount = float(data.get("amount"))
+    movement_type_idx = int(data.get("movement_type_index"))
+    if movement_type_idx is None or movement_type_idx < 0 or movement_type_idx >= len(MovementType):
+        return jsonify({"error": "Invalid movement_type"}), 400
+    movement_type = list(MovementType)[movement_type_idx]
+
+    category_id = data.get("category_id") 
+    if category_id is not None:
+        category = Category.query.get(category_id)
+        if not category:
+            if movement_type != MovementType.transfer:
+                category_id = -1
+            else:
+                return jsonify({"error": "Invalid category"}), 400
 
     sub_category_id = data.get("sub_category_id")
     subcategory = None
@@ -38,13 +47,6 @@ def add_entry():
         subcategory = SubCategory.query.get(sub_category_id)
         if not subcategory:
             return jsonify({"error": "Invalid subcategory"}), 400
-
-    amount = data.get("amount")
-    movement_type_idx = int(data.get("movement_type_index"))
-    print(movement_type_idx)  
-    if movement_type_idx is None or movement_type_idx < 0 or movement_type_idx >= len(MovementType):
-        return jsonify({"error": "Invalid movement_type"}), 400
-    movement_type = list(MovementType)[movement_type_idx]
 
     description = data.get("description")
     destination_account_id = data.get("destination_account_id")
@@ -60,13 +62,17 @@ def add_entry():
 
         if destination_account_id == account_id:
             return jsonify({"error": "source and destination accounts must differ"}), 400
+        
+        if amount is None or amount <= 0:
+            return jsonify({"error": "amount must be positive for transfers"}), 400
     else:
         destination_account_id = None
 
     entry = Entry(
         owner_id=owner.id,
         account_id=account_id,
-        category_id=category_id,
+        destination_account_id=destination_account_id,
+        category_id=category_id if category_id else None,
         sub_category_id=sub_category_id if sub_category_id else None,
         amount=amount,
         movement_type=movement_type,
@@ -141,10 +147,9 @@ def edit_entry(entry_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@entries_bp.route("/entries", methods=["POST"])
-@login_required
-def filter_entries():
-    data = request.json or {}
+
+def get_entries(body):
+    data = body or {}
     if( not data ):
         data = {
             "owners": [],
@@ -244,13 +249,23 @@ def filter_entries():
         except ValueError:
             return jsonify({"error": "Invalid amount max value"}), 400
 
-    entries = query.all()
+    return query 
+
+@entries_bp.route("/entries", methods=["POST"])
+@login_required
+def filter_entries():
+    data = request.json or {}
+    
+    query = get_entries(data)
+    entries = query.all() 
+
     result = []
     for e in entries:
         result.append({
             "id": e.id,
             "account": e.account.name,
-            "category": e.category.name,
+            "destination_account": e.destination_account.name if e.destination_account else None,
+            "category": e.category.name if e.category else None,
             "subcategory": e.subcategory.name if e.subcategory else None,
             "movement_type": e.movement_type.name,
             "amount": e.amount,
@@ -269,6 +284,80 @@ def filter_entries():
         "page": page
     })
 
+@entries_bp.route("/entries/aggregate", methods=["POST"])
+@login_required
+def aggregate_entries():
+    data = request.json or {}
+    if( not data ):
+        data = {
+            "owners": [],
+            "account_ids": [],
+            "movement_types": [],
+            "category_ids": [],
+            "subcategory_ids": [],
+            "date": {"from": None, "to": None},
+            "amount": {"min": None, "max": None},
+            "description": ""
+        }
+
+    account_ids = data.get("account_ids", [])
+    
+    query = get_entries(data)
+
+    if account_ids:
+        signed_amount = case(
+            # expense from account -> negative
+            (
+                and_(
+                    Entry.account_id.in_(account_ids),
+                    Entry.movement_type == MovementType.expense
+                ),
+                -Entry.amount
+            ),
+
+            # income to account -> positive
+            (
+                and_(
+                    Entry.account_id.in_(account_ids),
+                    Entry.movement_type == MovementType.income
+                ),
+                Entry.amount
+            ),
+
+            # transfer out -> negative
+            (
+                and_(
+                    Entry.account_id.in_(account_ids),
+                    Entry.movement_type == MovementType.transfer
+                ),
+                -Entry.amount
+            ),
+
+            # transfer in -> positive
+            (
+                and_(
+                    Entry.destination_account_id.in_(account_ids),
+                    Entry.movement_type == MovementType.transfer
+                ),
+                Entry.amount
+            ),
+
+            else_=0
+        )
+
+        total_amount = query.with_entities(
+            func.coalesce(func.sum(signed_amount), 0)
+        ).scalar()
+
+    else:
+        # fallback to normal sum if no accounts specified
+        total_amount = query.with_entities(
+            func.coalesce(func.sum(Entry.amount), 0)
+        ).scalar()
+
+    return jsonify({
+        "total_amount": float(total_amount)
+    })
 
 @entries_bp.route("/movement_types", methods=["GET"])
 @login_required
@@ -292,7 +381,7 @@ def serialize_entry(entry):
             }
             if entry.destination_account else None
         ),
-        "category": {"id": entry.category.id, "name": entry.category.name},
+        "category": {"id": entry.category.id, "name": entry.category.name} if entry.category else None,
         "subcategory": {"id": entry.subcategory.id, "name": entry.subcategory.name} if entry.subcategory else None,
         "amount": entry.amount,
         "movement_type": entry.movement_type.value,  # enum to string
