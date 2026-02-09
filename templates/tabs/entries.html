@@ -110,3 +110,30 @@
 <hr/>
 
 <input type="number" id="aggregate-entries-amount-result" disabled="true" placeholder="Aggregated Amount" />
+
+
+<h3>Entries Pivot</h3>
+
+<select id="pivot-entries-group-by">  
+  <option value="account">Account</option>
+  <option value="category">Category</option>
+  <option value="owner">Owner</option>
+</select>
+
+<input type="date" id="pivot-entries-date-from" />
+<input type="date" id="pivot-entries-date-to" />
+
+<button id="pivot-entries-button">Run Pivot</button>
+
+<h3>Result</h3>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Group By Id</th>
+      <th>Group By Name</th>
+      <th>Total Amount</th>
+    </tr>
+  </thead>
+  <tbody id="entries-pivot-tbody"></tbody>
+</table>

@@ -35,12 +35,17 @@ async function initEntriesFields(tabname = "entries") {
         const filterEntryDateTo = document.getElementById("filter-entries-date-to");
         const aggregateEntryDateFrom = document.getElementById("aggregate-entries-date-from");
         const aggregateEntryDateTo = document.getElementById("aggregate-entries-date-to");
+        const pivotEntryDateFrom = document.getElementById("pivot-entries-date-from");
+        const pivotEntryDateTo = document.getElementById("pivot-entries-date-to");
+        
         const today = new Date().toISOString().split("T")[0];
         addEntryDate.value = today;
         filterEntryDateFrom.value = today;
         filterEntryDateTo.value = today;
         aggregateEntryDateFrom.value = today;
         aggregateEntryDateTo.value = today;
+        pivotEntryDateFrom.value = today;
+        pivotEntryDateTo.value = today;
 
         const editEntryMovementType = document.getElementById("edit-entry-movement-type");
         fillSelect(editEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
@@ -300,6 +305,9 @@ document.addEventListener("click", async e => {
         aggregateEntryDateFrom.value = today;
         aggregateEntryDateTo.value = today;
     }
+    if (e.target.id === "pivot-entries-button") {
+      runPivot();
+    }
 });
 
 async function loadEntries(entriesData = null) {
@@ -496,4 +504,65 @@ async function aggregateEntries() {
 
   const result_amount = document.getElementById("aggregate-entries-amount-result");
   result_amount.value = Number(data.total_amount).toFixed(2);
+}
+
+
+async function runPivot() {
+
+  const payload = {};
+
+  // group by
+  payload.group_by =
+  document.getElementById("pivot-entries-group-by").value;
+
+  // date filters
+  const from =
+  document.getElementById("pivot-entries-date-from").value;
+
+  const to =
+  document.getElementById("pivot-entries-date-to").value;
+
+  if (from || to) {
+    payload.date = {};
+    if (from) payload.date.from = from;
+    if (to) payload.date.to = to;
+  }
+  
+   try {
+        const res = await fetch("/entries/pivot", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error || "Pivot failed");
+            return;
+        }
+
+        renderPivotTable(data);
+
+    } catch (err) {
+        console.error(err);
+        alert("Request failed");
+    }
+}
+
+function renderPivotTable(rows) {
+  const tbody = document.getElementById("entries-pivot-tbody");
+  tbody.innerHTML = "";
+
+  for (const e of rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${e.group_by_id}</td>
+      <td>${e.group_by_name}</td>
+      <td>${e.total_amount}</td>
+    `;
+    tbody.appendChild(tr);
+  }
 }

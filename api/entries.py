@@ -389,6 +389,97 @@ def serialize_entry(entry):
         "date": entry.date,
     }
 
+@entries_bp.route("/entries/pivot", methods=["POST"])
+@login_required
+def pivot_entries():
+
+    data = request.json or {}
+
+    group_by = data.get("group_by", "account")
+    date_from = data.get("date", {}).get("from")
+    date_to = data.get("date", {}).get("to")
+
+    query = db.session.query(Entry)
+
+    # -----------------------
+    # Date filtering
+    # -----------------------
+    if date_from:
+        query = query.filter(Entry.date >= date_from)
+
+    if date_to:
+        query = query.filter(Entry.date <= date_to)
+
+    # -----------------------
+    # Signed amount logic
+    # -----------------------
+    signed_amount = case(
+        (Entry.movement_type == "income", Entry.amount),
+        (Entry.movement_type == "expense", -Entry.amount),
+        else_=Entry.amount
+    )
+
+    # -----------------------
+    # GROUP BY selection
+    # -----------------------
+    if group_by == "account":
+
+        query = query.join(
+            Account,
+            Account.id == Entry.account_id
+        )
+
+        group_id_col = Account.id
+        group_name_col = Account.name
+
+    elif group_by == "category":
+
+        query = query.join(
+            Category,
+            Category.id == Entry.category_id
+        )
+
+        group_id_col = Category.id
+        group_name_col = Category.name
+
+    elif group_by == "owner":
+
+        query = query.join(
+            Owner,
+            Owner.id == Entry.owner_id
+        )
+
+        group_id_col = Owner.id
+        group_name_col = Owner.name
+
+    else:
+        return jsonify({"error": "Invalid group_by"}), 400
+
+    # -----------------------
+    # Aggregation
+    # -----------------------
+    results = (
+        query.with_entities(
+            group_id_col.label("group_id"),
+            group_name_col.label("group_name"),
+            func.coalesce(func.sum(signed_amount), 0).label("total_amount")
+        )
+        .group_by(group_id_col, group_name_col)
+        .order_by(group_name_col)
+        .all()
+    )
+
+    response = [
+        {
+            "group_by_id": r.group_id,
+            "group_by_name": r.group_name,
+            "total_amount": float(r.total_amount)
+        }
+        for r in results
+    ]
+
+    return jsonify(response)
+
 @event.listens_for(Entry, "before_insert")
 @event.listens_for(Entry, "before_update")
 def validate_entry(mapper, connection, target):
