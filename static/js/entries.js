@@ -38,13 +38,20 @@ async function initEntriesFields(tabname = "entries") {
         const pivotEntryDateFrom = document.getElementById("pivot-entries-date-from");
         const pivotEntryDateTo = document.getElementById("pivot-entries-date-to");
         
-        const today = new Date().toISOString().split("T")[0];
+        const today_date = new Date() 
+        
+        const oneMonthAgo_date = new Date();
+        oneMonthAgo_date.setMonth(today_date.getMonth() - 1);
+        
+        const today = today_date.toISOString().split("T")[0];
+        const oneMonthAgo = oneMonthAgo_date.toISOString().split("T")[0];
+        
         addEntryDate.value = today;
         filterEntryDateFrom.value = today;
         filterEntryDateTo.value = today;
         aggregateEntryDateFrom.value = today;
         aggregateEntryDateTo.value = today;
-        pivotEntryDateFrom.value = today;
+        pivotEntryDateFrom.value = oneMonthAgo;
         pivotEntryDateTo.value = today;
 
         const editEntryMovementType = document.getElementById("edit-entry-movement-type");
@@ -512,15 +519,13 @@ async function runPivot() {
   const payload = {};
 
   // group by
-  payload.group_by =
-  document.getElementById("pivot-entries-group-by").value;
+  payload.group_by = document.getElementById("pivot-entries-group-by").value;
+  payload.include_transfers = document.getElementById("pivot-entries-include-transfers").checked;
 
   // date filters
-  const from =
-  document.getElementById("pivot-entries-date-from").value;
+  const from = document.getElementById("pivot-entries-date-from").value;
 
-  const to =
-  document.getElementById("pivot-entries-date-to").value;
+  const to = document.getElementById("pivot-entries-date-to").value;
 
   if (from || to) {
     payload.date = {};

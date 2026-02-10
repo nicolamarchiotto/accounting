@@ -396,89 +396,108 @@ def pivot_entries():
     data = request.json or {}
 
     group_by = data.get("group_by", "account")
-    date_from = data.get("date", {}).get("from")
-    date_to = data.get("date", {}).get("to")
+    include_transfers = data.get("include_transfers", True)
 
-    query = db.session.query(Entry)
+    base_query = get_entries(data)
 
-    # -----------------------
-    # Date filtering
-    # -----------------------
-    if date_from:
-        query = query.filter(Entry.date >= date_from)
-
-    if date_to:
-        query = query.filter(Entry.date <= date_to)
-
-    # -----------------------
-    # Signed amount logic
-    # -----------------------
-    signed_amount = case(
-        (Entry.movement_type == "income", Entry.amount),
-        (Entry.movement_type == "expense", -Entry.amount),
-        else_=Entry.amount
+    # --------------------------------------------------
+    # 1) SOURCE ACCOUNT MOVEMENTS
+    # --------------------------------------------------
+    source_movements = base_query.with_entities(
+        Entry.account_id.label("account_id"),
+        Entry.category_id.label("category_id"),
+        case(
+            (Entry.movement_type == MovementType.income, Entry.amount),
+            (Entry.movement_type == MovementType.expense, -Entry.amount),
+            (
+                Entry.movement_type == MovementType.transfer,
+                -Entry.amount if include_transfers else 0
+            ),
+            else_=0
+        ).label("signed_amount")
     )
 
-    # -----------------------
-    # GROUP BY selection
-    # -----------------------
-    if group_by == "account":
-
-        query = query.join(
-            Account,
-            Account.id == Entry.account_id
+    # --------------------------------------------------
+    # 2) DESTINATION ACCOUNT MOVEMENTS (TRANSFERS ONLY)
+    # --------------------------------------------------
+    if include_transfers:
+        destination_movements = base_query.with_entities(
+            Entry.destination_account_id.label("account_id"),
+            Entry.category_id.label("category_id"),
+            Entry.amount.label("signed_amount")
+        ).filter(
+            Entry.movement_type == MovementType.transfer,
+            Entry.destination_account_id.isnot(None)
         )
 
-        group_id_col = Account.id
-        group_name_col = Account.name
+        movements = source_movements.union_all(
+            destination_movements
+        ).subquery()
+
+    else:
+        movements = source_movements.subquery()
+
+    # --------------------------------------------------
+    # 3) GROUP BY LOGIC
+    # --------------------------------------------------
+
+    if group_by == "account":
+
+        query = (
+            db.session.query(
+                Account.id.label("group_id"),
+                Account.name.label("group_name"),
+                func.coalesce(func.sum(movements.c.signed_amount), 0)
+                    .label("total_amount")
+            )
+            .join(Account, Account.id == movements.c.account_id)
+            .group_by(Account.id, Account.name)
+            .order_by(Account.name)
+        )
 
     elif group_by == "category":
 
-        query = query.join(
-            Category,
-            Category.id == Entry.category_id
+        query = (
+            db.session.query(
+                Category.id.label("group_id"),
+                Category.name.label("group_name"),
+                func.coalesce(func.sum(movements.c.signed_amount), 0)
+                    .label("total_amount")
+            )
+            .join(Category, Category.id == movements.c.category_id)
+            .group_by(Category.id, Category.name)
+            .order_by(Category.name)
         )
-
-        group_id_col = Category.id
-        group_name_col = Category.name
 
     elif group_by == "owner":
 
-        query = query.join(
-            Owner,
-            Owner.id == Entry.owner_id
+        query = (
+            db.session.query(
+                Owner.id.label("group_id"),
+                Owner.name.label("group_name"),
+                func.coalesce(func.sum(movements.c.signed_amount), 0)
+                    .label("total_amount")
+            )
+            .join(Account, Account.id == movements.c.account_id)
+            .join(Owner, Owner.id == Account.owner_id)
+            .group_by(Owner.id, Owner.name)
+            .order_by(Owner.name)
         )
-
-        group_id_col = Owner.id
-        group_name_col = Owner.name
 
     else:
-        return jsonify({"error": "Invalid group_by"}), 400
+        return jsonify({"error": "Invalid group_by value"}), 400
 
-    # -----------------------
-    # Aggregation
-    # -----------------------
-    results = (
-        query.with_entities(
-            group_id_col.label("group_id"),
-            group_name_col.label("group_name"),
-            func.coalesce(func.sum(signed_amount), 0).label("total_amount")
-        )
-        .group_by(group_id_col, group_name_col)
-        .order_by(group_name_col)
-        .all()
-    )
+    results = query.all()
 
-    response = [
+    return jsonify([
         {
             "group_by_id": r.group_id,
             "group_by_name": r.group_name,
             "total_amount": float(r.total_amount)
         }
         for r in results
-    ]
+    ])
 
-    return jsonify(response)
 
 @event.listens_for(Entry, "before_insert")
 @event.listens_for(Entry, "before_update")

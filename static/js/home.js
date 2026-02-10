@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Optionally trigger first tab on load
-  document.querySelector('#tabs button[data-tab="owners"]').click();
+  document.querySelector('#tabs button[data-tab="entries"]').click();
 });
 
 // logout
