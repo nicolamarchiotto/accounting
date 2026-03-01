@@ -1,12 +1,4 @@
-// Globals for cached data
-let categories = [];
-
 async function initCategoriesFields(tabname = "categories") {
-
-    const categories_res = await fetch("/categories");
-    if (!categories_res.ok) throw new Error('Failed to fetch categories');
-    categories = await categories_res.json();
-    
     if(tabname === "categories"){
         const editCategorySelect = document.getElementById("edit-category-select");
         fillSelect(editCategorySelect, categories, "id", "name", "Select category");
@@ -145,6 +137,7 @@ document.addEventListener("click", async e => {
                 return data; // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedCategories()
                 initCategoriesFields();
             })
             .catch(err => {
@@ -173,6 +166,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedCategories()
                 initCategoriesFields();
             })
             .catch(err => {
@@ -204,6 +198,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedCategories()
                 initCategoriesFields();
             })
             .catch(err => {
@@ -215,6 +210,7 @@ document.addEventListener("click", async e => {
     }
 
     if (e.target.id === "get-category-button") {
+        updateCachedCategories()
         initCategoriesFields();
     }
 
@@ -246,6 +242,7 @@ document.addEventListener("click", async e => {
                 return data; // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedCategories()
                 initCategoriesFields();
             })
             .catch(err => {
@@ -282,6 +279,7 @@ document.addEventListener("click", async e => {
                 return data; // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedCategories()
                 initCategoriesFields();
             })
             .catch(err => {
@@ -310,6 +308,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedCategories()
                 initCategoriesFields();
             })
             .catch(err => {
@@ -320,17 +319,3 @@ document.addEventListener("click", async e => {
         }
     }
 });
-
-function onEditCategorySubcategoryChange(categorySelectId, subcategorySelectId) {
-    const categoryId = document.getElementById(categorySelectId).value;
-    const subcategorySelect = document.getElementById(subcategorySelectId);
-
-    subcategorySelect.innerHTML = "";
-
-    if (!categoryId) return;
-
-    const category = categories.find(c => c.id == categoryId);
-    if (!category) return;
-
-    fillSelect(subcategorySelect, category.subcategories, "id", "name", "Select subcategory");
-}

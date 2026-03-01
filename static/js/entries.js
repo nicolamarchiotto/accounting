@@ -1,15 +1,5 @@
-let movement_types = [];
-let movement_type_transfer = "";
-
 async function initEntriesFields(tabname = "entries") {
-  const response = await fetch('/movement_types');
-  if (!response.ok) throw new Error('Failed to movement types');
-  movement_types = await response.json();
-    
     if(tabname === "entries"){
-        
-        movement_type_transfer = movement_types[2];
-
         const addEntryMovementType = document.getElementById("add-entry-movement-type");
         fillSelect(addEntryMovementType, movement_types, "id", "name", "Select Movement Type", true);
 
@@ -227,6 +217,29 @@ document.addEventListener("click", async e => {
         }
     }
 
+    if (e.target.id === "remove-all-entry-button") {
+        try {
+            await fetch(`/entries/remove_all`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            }).then(response => {
+                if (!response.ok) {
+                    // HTTP status is NOT in the 200-299 range
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json(); // Parse JSON if response is OK
+            })
+            .then(data => {
+                loadEntries();
+            })
+            .catch(err => {
+                alert("Request failed: " + err.message);
+            });
+        } catch (err) {
+            alert("Remove owner failed: " + err.message);
+        }
+    }
+
     if (e.target.id === "edit-entry-button") {
         const entryId = document.getElementById("edit-entry-select").value;
 
@@ -312,10 +325,219 @@ document.addEventListener("click", async e => {
         aggregateEntryDateFrom.value = today;
         aggregateEntryDateTo.value = today;
     }
+
     if (e.target.id === "pivot-entries-button") {
       runPivot();
     }
+
+    if (e.target.id === "import-entry-upload-button") {
+        const importFileInput = document.getElementById('import-entry-file-input');
+        const status = document.getElementById('import-entry-status');
+        const file = importFileInput.files[0];
+        if (!file) {
+            status.textContent = 'Please select a file first.';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file); // 'file' must match Flask endpoint parameter
+
+        try {
+            await fetch("/entries/import", {
+              method: "POST",
+              body: formData
+            }).then(async response => {
+                const data = await response.json(); // ALWAYS parse JSON
+                if (!response.ok){
+                    if(data?.error)
+                        throw new Error(`${data?.error}`);    
+                    else
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                return data; // Parse JSON if response is OK
+            })
+            .then(data => {
+              const tbody = document.getElementById("import-entries-tbody");
+              tbody.innerHTML = "";
+              let id = 0  ;
+              data.items.forEach(row => {
+                  addImportRow(tbody, id, row);
+                  id++;
+              });
+            })
+            .catch(err => {
+                alert("Request failed: " + err.message);
+            });
+        } catch (err) {
+            alert("Add entry failed: " + err.message);
+        }
+    }  
+
+    if(e.target.id === "import-entry-add-button") {
+      const tbody = document.getElementById("import-entries-tbody");
+      const rows = tbody.querySelectorAll("tr");
+
+      console.log("Importing entries from table with " + rows.length + " rows");
+
+      rows.forEach((row, index) => {
+          const cells = row.querySelectorAll("td");
+
+          const idx = cells[0].querySelector("input")?.value
+          const type = cells[1].querySelector("select")
+          const type_index = type?.selectedIndex -1 || 0; // Get index of movement type
+          const type_value = type?.value || "";
+
+          if(type_index === null || type.value.trim() === "") {
+            console.log(`Movement type cannot be empty (row ${idx})`);
+            return;
+          }
+          const account = cells[2].querySelector("select")?.value;
+          const destinationAccount = cells[3].querySelector("select")?.value;
+          const category = cells[4].querySelector("select")?.value || null;
+          const subcategory = cells[5].querySelector("select")?.value || null;
+          const amount = Math.abs(cells[6].querySelector("input")?.value);
+          const description = cells[7].querySelector("input")?.value || "";
+          const date = cells[8].querySelector("input")?.value;
+
+          const payload = {
+            account_id: account,
+            destination_account_id:
+              type_value === movement_type_transfer
+                ? destinationAccount
+                : null,
+            movement_type_index:  type_index, // Send index of movement type
+            category_id: category,
+            sub_category_id: subcategory,
+            amount: amount,
+            date: date,
+            description: description
+          };
+
+          try {
+              fetch("/entries/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+              }).then(async response => {
+                  const data = await response.json(); // ALWAYS parse JSON
+                  if (!response.ok){
+                      if(data?.error)
+                          throw new Error(`${data?.error}`);    
+                      else
+                          throw new Error(`HTTP error! Status: ${response.status}`);
+                  }
+
+                  return data; // Parse JSON if response is OK
+              })
+              .catch(err => {
+                  alert("Request failed: " + err.message);
+                  return;
+              });
+          } catch (err) {
+              alert("Add entry failed: " + err.message);
+              return;
+          }
+        }
+      );
+      loadEntries();
+    }
 });
+
+
+function addImportRow(tbody, id, row = {}) {
+    const tr = document.createElement("tr");
+
+    // idx input
+    const idxCell = document.createElement("td");
+    const idxInput = document.createElement("input");
+    idxInput.id = id+"-"+"import-idx-input";
+    idxInput.type = "number";
+    idxInput.value = id || "";
+    idxCell.appendChild(idxInput);
+    tr.appendChild(idxCell);
+
+    // Movement type select
+    const movementTypeCell = document.createElement("td");
+    const movementTypeSelect = document.createElement("select");
+    movementTypeSelect.id = id+"-"+"import-movement-type-select";
+    fillSelect(movementTypeSelect, movement_types, "id", "name", "Select Movement Type", true);
+    movementTypeSelect.value = row.movement_type_id;
+    movementTypeCell.appendChild(movementTypeSelect);
+    tr.appendChild(movementTypeCell);
+
+    // Account select
+    const accountCell = document.createElement("td");
+    const accountSelect = document.createElement("select");
+    accountSelect.id = id+"-"+"import-account-select";
+    fillSelect(accountSelect, accounts, "id", "name", "Select account");
+    accountSelect.value = row.account_id;
+    accountCell.appendChild(accountSelect);
+    tr.appendChild(accountCell);
+
+    // Destination Account select
+    const destinationAccountCell = document.createElement("td");
+    const destinationAccountSelect = document.createElement("select");
+    destinationAccountSelect.id = id+"-"+"import-destination-account-select";
+    fillSelect(destinationAccountSelect, accounts, "id", "name", "Select destination account");
+    destinationAccountSelect.value = row.destination_account_id   || "";
+    destinationAccountCell.appendChild(destinationAccountSelect);
+    tr.appendChild(destinationAccountCell);
+
+    // Category select
+    const categoryCell = document.createElement("td");
+    const categorySelect = document.createElement("select");
+    categorySelect.id = id+"-"+"import-category-select";
+    fillSelect(categorySelect, categories, "id", "name", "Select category");
+    categoryCell.appendChild(categorySelect);
+    categorySelect.value = row.category_id || "";
+    tr.appendChild(categoryCell);
+    
+    // SubCategory select
+    const subCategoryCell = document.createElement("td");
+    const subCategorySelect = document.createElement("select");
+    subCategorySelect.id = id+"-"+"import-subcategory-select";
+    subCategorySelect.value = row.sub_category_id || "";
+    subCategoryCell.appendChild(subCategorySelect);
+    tr.appendChild(subCategoryCell);
+    
+    // Amount input
+    const amountCell = document.createElement("td");
+    const amountInput = document.createElement("input");
+    amountInput.id = id+"-"+"import-amount-input";
+    amountInput.type = "number";
+    amountInput.step = "0.01";
+    amountInput.value = row.amount || "";
+    amountCell.appendChild(amountInput);
+    tr.appendChild(amountCell);
+
+    // Description input
+    const descCell = document.createElement("td");
+    const descInput = document.createElement("input");
+    descInput.id = id+"-"+"import-description-input";
+    descInput.type = "text";
+    descInput.value = row.description || "";
+    descCell.appendChild(descInput);
+    tr.appendChild(descCell);
+
+    // Date input
+    const dateCell = document.createElement("td");
+    const dateInput = document.createElement("input");
+    dateInput.id = id+"-"+"import-date-input";
+    dateInput.type = "date";
+    dateInput.value = row.date || "";
+    dateCell.appendChild(dateInput);
+    tr.appendChild(dateCell);
+
+    tbody.appendChild(tr);
+    
+    onEditCategorySubcategoryChange(categorySelect.id, subCategorySelect.id)
+    categorySelect.addEventListener("change", () =>
+      onEditCategorySubcategoryChange(categorySelect.id, subCategorySelect.id)
+    );
+    subCategorySelect.value = row.sub_category_id || "";
+}
+
 
 async function loadEntries(entriesData = null) {
   let entries = [];
@@ -451,8 +673,6 @@ async function filterEntries() {
     alert(data.error || "Search failed");
     return;
   }
-
-  console.log("Filtered entries:", data); // Debug log
 
   loadEntries(data);
 }

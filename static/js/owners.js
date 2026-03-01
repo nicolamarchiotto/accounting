@@ -1,11 +1,4 @@
-// Globals for cached data
-let owners = [];
-
 async function initOwnersFields(tabname = "owners") {
-    const owner_res = await fetch("/owners");
-    if (!owner_res.ok) throw new Error('Failed to fetch owners');
-    owners = await owner_res.json();
-    
     if(tabname === "accounts"){
         const ownerSelect = document.getElementById("account-owner-select");
         fillSelect(ownerSelect, owners, "id", "name", "Select owner");
@@ -66,6 +59,7 @@ document.addEventListener("click", async e => {
                 return data;
             })
             .then(data => {
+                updateCachedOwners()
                 initOwnersFields();
             })
             .catch(err => {
@@ -94,6 +88,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedOwners()
                 initOwnersFields();
             })
             .catch(err => {
@@ -164,6 +159,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedOwners()
                 initOwnersFields();
             })
             .catch(err => {
@@ -175,6 +171,7 @@ document.addEventListener("click", async e => {
     }
 
     if (e.target.id === "get-owner") {
+        updateCachedOwners()
         initOwnersFields();
     }
 });

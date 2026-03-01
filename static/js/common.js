@@ -20,21 +20,16 @@ function fillSelect(selectElem, items, valueField="id", textField="name", emptyO
     option.value = "";
     option.textContent = emptyOption;
     selectElem.appendChild(option);
-    
-    if(array_of_strings) {
-        for (const item of items) {
-            const option = document.createElement("option");
+
+    for (const item of items) {
+        const option = document.createElement("option");
+        if(array_of_strings) {
             option.value = item;
             option.textContent = item;
-            selectElem.appendChild(option);
-        }
-        return;
-    }else {
-        for (const item of items) {
-            const option = document.createElement("option");
+        } else {
             option.value = item[valueField];
             option.textContent = item[textField];
-            selectElem.appendChild(option);
         }
+        selectElem.appendChild(option);
     }
 }

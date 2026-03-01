@@ -17,6 +17,35 @@
 
 <hr/>
 
+<!-- IMPORT ENTRIES FROM FILE -->
+
+
+<h2>Add entries from file</h2>
+<input type="file" id="import-entry-file-input" accept=".xls">
+<button id="import-entry-upload-button">Upload</button>
+<button id="import-entry-add-button">Add Entries</button>
+<p id="import-entry-status"></p>
+<hr/>
+
+<hr/>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Idx</th>
+      <th>Type</th>
+      <th>Account</th>
+      <th>Destination Account</th>
+      <th>Category</th>
+      <th>Subcategory</th>
+      <th>Amount</th>
+      <th>Description</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody id="import-entries-tbody"></tbody>
+</table>
+
 <!-- EDIT ENTRY -->
 <h3>Edit Entry</h3>
 
@@ -42,6 +71,7 @@
 
 <select id="remove-entry-select"></select>
 <button id="remove-entry-button">Remove entry</button>
+<button id="remove-all-entry-button">Remove all entries</button>
 
 <!-- GET ENTRIES -->
 <h3>Get Entries</h3>

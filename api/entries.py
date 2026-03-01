@@ -4,8 +4,11 @@ from flask_login import (
 )
 from models import Entry, Account, Owner, MovementType, Category, SubCategory
 from extensions import db
+from file_import_parsers import ParserRegistry
 from datetime import datetime
 from sqlalchemy import event, func, and_, or_, case
+import pandas as pd
+from typing import Dict, Tuple, Any
 
 entries_bp = Blueprint("entries", __name__)
 
@@ -13,8 +16,6 @@ entries_bp = Blueprint("entries", __name__)
 @entries_bp.route("/entries/add", methods=["POST"])
 @login_required
 def add_entry():
-    data = request.json
-
     # Extract owner name and find the owner
     data = request.json
 
@@ -48,7 +49,7 @@ def add_entry():
         if not subcategory:
             return jsonify({"error": "Invalid subcategory"}), 400
 
-    description = data.get("description")
+    description = (data.get("description") or "")[:100]    
     destination_account_id = data.get("destination_account_id")
     date = data.get("date")
 
@@ -96,6 +97,20 @@ def remove_entry(entry_id):
 
     return jsonify({"success": True})
 
+@entries_bp.route("/entries/remove_all", methods=["DELETE"])
+@login_required
+def remove_all_entries():
+    try:
+        Entry.query.delete()
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "error": "Failed to remove all entries",
+            "details": str(e)
+        }), 500
+
+    return jsonify({"success": True})
 @entries_bp.route("/entries/edit/<int:entry_id>", methods=["PUT"])
 @login_required
 def edit_entry(entry_id):
@@ -388,6 +403,40 @@ def serialize_entry(entry):
         "description": entry.description,
         "date": entry.date,
     }
+
+
+def allowed_file(filename):
+    """Check if imported file has a valid extension."""
+    ALLOWED_EXTENSIONS = {"xls", "xlsx"}
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@entries_bp.route("/entries/import", methods=["POST"])
+@login_required
+def entries_import():
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files["file"]
+    if not allowed_file(file.filename):
+        return jsonify({"error": "Invalid file type."}), 400
+     
+    df = pd.read_excel(file)
+
+    parser = ParserRegistry.detect(df.columns)
+
+    if not parser:
+        return jsonify({
+            "error": "Unknown file format",
+            "columns": list(df.columns)
+        }), 400
+
+    objects = parser.parse(df)
+
+    return jsonify({
+        "format": parser.__name__,
+        "count": len(objects),
+        "items": [e for e in objects],
+    })
 
 @entries_bp.route("/entries/pivot", methods=["POST"])
 @login_required

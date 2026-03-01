@@ -1,11 +1,4 @@
-let accounts = [];
-let account_types = [];
-
 async function initAccountsFields(tabname = "accounts") {
-    const response = await fetch('/accounts');
-    if (!response.ok) throw new Error('Failed to fetch accounts');
-    accounts = await response.json();
-    
     if(tabname === "accounts"){
         populateAccountsTable(accounts);
 
@@ -14,10 +7,6 @@ async function initAccountsFields(tabname = "accounts") {
 
         const editAccountSelect = document.getElementById("edit-account-select");
         fillSelect(editAccountSelect, accounts, "id", "name", "Select account");
-
-        const account_types_res = await fetch("/account/types");
-        if(!account_types_res.ok) throw new Error('Failed to fetch account types');
-        account_types = await account_types_res.json();
 
         const accountTypeSelect = document.getElementById("account-type-select");
         fillSelect(accountTypeSelect, account_types, "type", "type", "Select account type", true);
@@ -125,6 +114,7 @@ document.addEventListener("click", async e => {
                 return data; // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedAccounts()
                 initAccountsFields();
             })
             .catch(err => {
@@ -153,6 +143,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedAccounts()
                 initAccountsFields();
             })
             .catch(err => {
@@ -186,6 +177,7 @@ document.addEventListener("click", async e => {
                 return response.json(); // Parse JSON if response is OK
             })
             .then(data => {
+                updateCachedAccounts()
                 initAccountsFields();
             })
             .catch(err => {
@@ -197,6 +189,7 @@ document.addEventListener("click", async e => {
     }
 
     if (e.target.id === "get-account") {
+        updateCachedAccounts()
         initAccountsFields();
     }
 });
