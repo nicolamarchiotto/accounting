@@ -24,6 +24,7 @@ def accounts():
 
     account_type_str = data.get("account_type")
     account_name = data.get("name")
+    start_amount = data.get("start_amount", 0.0)
 
     if(not account_name or not owner_id or not account_type_str):
         return jsonify({"error": "owner_id and account_type are required"}), 400
@@ -39,7 +40,8 @@ def accounts():
     account = Account(
         name=account_name,
         account_type=account_type_enum,
-        owner_id=owner_id
+        owner_id=owner_id,
+        start_amount=start_amount
     )
 
     db.session.add(account)
@@ -54,7 +56,8 @@ def get_accounts():
             "id": a.id,
             "name": a.name,
             "owner": a.owner.name,
-            "account_type": a.account_type.value
+            "account_type": a.account_type.value,
+            "start_amount": a.start_amount
         }
         for a in Account.query.all()
     ]), 200
@@ -70,6 +73,7 @@ def info_account(account_id):
         "account_id": account.id,
         "account_name": account.name,
         "owner_name": account.owner.name,
+        "start_amount": account.start_amount,
         "entries_count": entries_count
     })
 
@@ -101,7 +105,8 @@ def account(account_id):
     new_name = data.get("name", "").strip()
     new_account_type = data.get("account_type", "").strip()
     new_owner_id = data.get("owner_id", "").strip()
-    
+    new_start_amount = data.get("start_amount", "")
+        
     if not new_name or not new_account_type or not new_owner_id:
         return jsonify({"error": "New name is required"}), 400
     
@@ -110,11 +115,20 @@ def account(account_id):
         return jsonify({"error": "account not found"}), 404
     
     try:
-        account.name = new_name
-        account.account_type = AccountType(new_account_type)
-        account.owner_id = new_owner_id
+        if new_name != "":
+            account.name = new_name
+
+        if new_account_type != "":
+            account.account_type = AccountType(new_account_type)
+        
+        if new_owner_id != "":
+            account.owner_id = new_owner_id
+
+        if new_start_amount != "":
+            account.start_amount = float(new_start_amount)
+            
         db.session.commit()
-        return jsonify({"success": True, "message": f"account with ID {account_id} updated", "account": {"id": account.id, "name": account.name}})
+        return jsonify({"success": True, "message": f"account with ID {account_id} updated", "account": {"id": account.id, "name": account.name, "start_amount": account.start_amount}})
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "Failed to update account", "details": str(e)}), 500

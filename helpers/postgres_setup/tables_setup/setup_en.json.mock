@@ -137,12 +137,14 @@
         {
             "name": "My Bank",
             "owner_name": "Owner1",
-            "account_type_str": "Bank"
+            "account_type_str": "Bank",
+            "start_amount": 0.0
         },
         {
             "name": "My Cash",
             "owner_name": "Owner2",
-            "account_type_str": "Cash"
+            "account_type_str": "Cash",
+            "start_amount": 0.0
         }
     ]
 }

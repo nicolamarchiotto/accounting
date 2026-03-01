@@ -21,6 +21,4 @@ python app.py
 working on import scripts
     - errors on add entries, improve error prompting for logging and to easily recognize error 
 
-manage initial account amount, to not be considered as entry
-
 Entries Fronted

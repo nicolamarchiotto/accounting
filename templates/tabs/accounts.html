@@ -4,6 +4,7 @@
 <input type="text" id="account-name" placeholder="Account Name" />
 <select id="account-owner-select" name="account-owner"></select>
 <select id="account-type-select" name="account-type"></select>
+<input id="account-start-amount-input" name="account-start-amount" placeholder="Start amount" type="number" step="0.01" min="0"></input>
 <button id="add-account">Add account</button>
 
 <h2>Remove account</h2>
@@ -12,9 +13,10 @@
 
 <h2>Edit account</h2>
 <select id="edit-account-select" name="edit-account-select"></select>
-<input type="text" id="account-edit-name" placeholder="New Account Name" />
+<input type="text" id="account-edit-name" placeholder="New Account Name"/>
 <select id="edit-account-owner-select" name="edit-account-owner"></select>
 <select id="edit-account-type-select" name="edit-account-type"></select>
+<input id="edit-account-start-amount-input" name="edit-account-start-amount" placeholder="Start amount" type="number" step="0.01" min="0"></input>
 <button id="edit-account">Edit account</button>
 
 <h2>All accounts</h2>
@@ -26,6 +28,7 @@
             <th>Account Name</th>
             <th>Owner</th>
             <th>Account Type</th>
+            <th>Start Amount</th>
         </tr>
     </thead>
     <tbody id="accounts-tbody"></tbody>

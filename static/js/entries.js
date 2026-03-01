@@ -383,22 +383,49 @@ document.addEventListener("click", async e => {
       rows.forEach((row, index) => {
           const cells = row.querySelectorAll("td");
 
-          const idx = cells[0].querySelector("input")?.value
+          const idx = cells[0].querySelector("input")?.value || null;
           const type = cells[1].querySelector("select")
           const type_index = type?.selectedIndex -1 || 0; // Get index of movement type
           const type_value = type?.value || "";
-
-          if(type_index === null || type.value.trim() === "") {
-            console.log(`Movement type cannot be empty (row ${idx})`);
-            return;
-          }
-          const account = cells[2].querySelector("select")?.value;
-          const destinationAccount = cells[3].querySelector("select")?.value;
+          const account = cells[2].querySelector("select")?.value || null;;
+          const destinationAccount = cells[3].querySelector("select")?.value || null;;
           const category = cells[4].querySelector("select")?.value || null;
           const subcategory = cells[5].querySelector("select")?.value || null;
           const amount = Math.abs(cells[6].querySelector("input")?.value);
           const description = cells[7].querySelector("input")?.value || "";
           const date = cells[8].querySelector("input")?.value;
+          
+          if(type_index === null || type.value?.trim() === "") {
+            alert(`Movement type cannot be empty (row ${idx})`);
+            return;
+          }
+
+          if(!account || account?.trim() === "") {
+            alert(`Account cannot be empty (row ${idx})`);
+            return;
+          }
+
+          if(type_value === movement_type_transfer){
+            if(!destinationAccount || destinationAccount?.trim() === "") {
+              alert(`Destination account cannot be empty for transfer type (row ${idx})`);
+              return;
+            }
+          }else{
+            if(!category || category?.trim() === "") {
+              alert(`Category cannot be empty for non-transfer type (row ${idx})`);
+              return;
+            }
+          }
+
+          if(!amount || amount <= 0) {
+            alert(`Amount must be a positive number (row ${idx})`);
+            return;
+          }
+
+          if(!date || date?.trim() === "") {
+            alert(`Date cannot be empty (row ${idx})`);
+            return;
+          }
 
           const payload = {
             account_id: account,
@@ -741,6 +768,7 @@ async function runPivot() {
   // group by
   payload.group_by = document.getElementById("pivot-entries-group-by").value;
   payload.include_transfers = document.getElementById("pivot-entries-include-transfers").checked;
+  payload.include_accounts_start_amount = document.getElementById("pivot-entries-include-accounts-start-amount").checked;
 
   // date filters
   const from = document.getElementById("pivot-entries-date-from").value;

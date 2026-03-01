@@ -21,6 +21,8 @@ def add_entry():
 
     # Extract account_id and verify account belongs to owner
     account_id = data.get("account_id")
+    if not account_id:
+        return jsonify({"error": "account_id is required"}), 400
     account = Account.query.get(account_id)
     if not account:
         return jsonify({"error": "Invalid account"}), 400
@@ -28,6 +30,9 @@ def add_entry():
     owner = Owner.query.get(account.owner_id)
     
     amount = float(data.get("amount"))
+    if not amount or amount <= 0:
+        return jsonify({"error": "amount must be a positive number"}), 400
+    
     movement_type_idx = int(data.get("movement_type_index"))
     if movement_type_idx is None or movement_type_idx < 0 or movement_type_idx >= len(MovementType):
         return jsonify({"error": "Invalid movement_type"}), 400
@@ -52,6 +57,8 @@ def add_entry():
     description = (data.get("description") or "")[:100]    
     destination_account_id = data.get("destination_account_id")
     date = data.get("date")
+    if not date:
+        return jsonify({"error": "date is required"}), 400
 
     if movement_type == MovementType.transfer:
         if not destination_account_id:
@@ -446,6 +453,7 @@ def pivot_entries():
 
     group_by = data.get("group_by", "account")
     include_transfers = data.get("include_transfers", True)
+    include_accounts_start_amount = data.get("include_accounts_start_amount", False)
 
     base_query = get_entries(data)
 
@@ -492,13 +500,19 @@ def pivot_entries():
 
     if group_by == "account":
 
+        base_total = func.coalesce(func.sum(movements.c.signed_amount), 0)
+
         query = (
             db.session.query(
                 Account.id.label("group_id"),
                 Account.name.label("group_name"),
-                func.coalesce(func.sum(movements.c.signed_amount), 0)
-                    .label("total_amount")
+                (
+                    base_total + func.coalesce(Account.start_amount, 0)
+                    if include_accounts_start_amount
+                    else base_total
+                ).label("total_amount")
             )
+            .select_from(movements)
             .join(Account, Account.id == movements.c.account_id)
             .group_by(Account.id, Account.name)
             .order_by(Account.name)

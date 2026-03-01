@@ -82,6 +82,7 @@ function populateAccountsTable(accounts) {
         <td>${e.name}</td>
         <td>${e.owner}</td>
         <td>${e.account_type}</td>
+        <td>${e.start_amount}</td>
     `;
     tbody.appendChild(tr);
 }
@@ -92,9 +93,10 @@ document.addEventListener("click", async e => {
         const name = document.getElementById("account-name").value;
         const accountType = document.getElementById("account-type-select").value;
         const acconuntOwner = document.getElementById("account-owner-select").value;
+        const acconuntStartAmount = document.getElementById("account-start-amount-input").value;
                
-        if(name.trim() === "" || accountType.trim() === "" || acconuntOwner.trim() === "") {
-            alert("Account name, type, and owner cannot be empty");
+        if(name.trim() === "" || accountType.trim() === "" || acconuntOwner.trim() === "" || acconuntStartAmount.trim() === "") {
+            alert("Account name, type, owner and start amount cannot be empty");
             return;
         }
 
@@ -102,7 +104,7 @@ document.addEventListener("click", async e => {
             await fetch("/accounts", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({name: name, account_type: accountType, owner_id: acconuntOwner})
+                body: JSON.stringify({name: name, account_type: accountType, owner_id: acconuntOwner, start_amount: acconuntStartAmount})
             }).then(async response => {
                 const data = await response.json(); // ALWAYS parse JSON
                 if (!response.ok){
@@ -159,6 +161,7 @@ document.addEventListener("click", async e => {
         const accountName = document.getElementById("account-edit-name").value;
         const accountType = document.getElementById("edit-account-type-select").value;
         const accountOwner = document.getElementById("edit-account-owner-select").value;
+        const accountStartAmount = document.getElementById("edit-account-start-amount-input").value || 0.0;
                
         if(accountId.trim() === "" || accountName.trim() === "" || accountType.trim() === "" || accountOwner.trim() === "") {
             alert("account ID, name, type, and owner cannot be empty");
@@ -168,7 +171,7 @@ document.addEventListener("click", async e => {
             await fetch(`/accounts/edit/${accountId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: accountName, account_type: accountType, owner_id: accountOwner })
+                body: JSON.stringify({ name: accountName, account_type: accountType, owner_id: accountOwner, start_amount: accountStartAmount })
             }).then(response => {
                 if (!response.ok) {
                     // HTTP status is NOT in the 200-299 range

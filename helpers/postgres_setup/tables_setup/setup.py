@@ -8,7 +8,6 @@ class AccountType(enum.Enum):
     insurance = 'Insurance'
     investment = 'Investment'
 
-# ⚠️ Se usi session cookie dopo login, usa requests.Session()
 session = requests.Session()
 
 def load_json(file_path):
@@ -43,6 +42,7 @@ def add_account(account_data, endpoint):
     name = account_data.get("name")
     owner_name = account_data.get("owner_name")
     account_type_str = account_data.get("account_type_str")
+    start_amount = account_data.get("start_amount", 0.0)
     if not owner_name or not name or not account_type_str:
         print(f"❌ Missing data for account: {account_data}")
         return False
@@ -60,7 +60,8 @@ def add_account(account_data, endpoint):
         json={
             "name": name,
             "owner_name": owner_name,
-            "account_type": account_type_str
+            "account_type": account_type_str,
+            "start_amount": start_amount
         }
     )
 
@@ -122,17 +123,20 @@ def add_category(category_data, category_endpoint, subcategory_endpoint):
 
 def login(username, password, endpoint):
 
-    response = session.post(
-        endpoint,
-        json={"username": username, "password": password}
-    )
+    try:    
+        response = session.post(
+            endpoint,
+            json={"username": username, "password": password}
+        )
 
-    if response.status_code == 200:
-        print("✅ Logged in successfully")
-        return True
-    else:
-        print(f"❌ Login failed: {response.status_code} {response.text}")
-    
+        if response.status_code == 200:
+            print("✅ Logged in successfully")
+            return True
+        else:
+            print(f"❌ Login failed: {response.status_code} {response.text}")
+
+    except Exception as e:
+        print(f"❌ Login failed with credentials",username, password, "\nError: ", e)
     return False
 
 def logout(endpoint):
@@ -156,6 +160,10 @@ if __name__ == "__main__":
         exit(1)
 
     api_base_url = json_data.get("api_base_url", "http://localhost:5000")
+    if not api_base_url or api_base_url == "":
+        print("❌ API base URL is empty in JSON")
+        exit(1)
+
     if not api_base_url:
         print("❌ Missing API base URL in JSON")
         exit(1)

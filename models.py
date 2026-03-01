@@ -55,6 +55,7 @@ class Account(db.Model):
     name = db.Column(db.String(50), nullable=False)
 
     account_type = db.Column(db.Enum(AccountType), nullable=False)
+    start_amount = db.Column(db.Float, nullable=False, default=0.0)
 
     owner_id = db.Column(db.Integer, db.ForeignKey("owners.id"), nullable=False)
     owner = db.relationship("Owner", back_populates="accounts")
