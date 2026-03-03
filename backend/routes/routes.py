@@ -6,6 +6,27 @@ routes_bp = Blueprint("routes", __name__)
 # -----------------------
 # Authentication
 # -----------------------
+
+from flask import request, jsonify
+from flask_login import login_user
+from models import User
+
+@routes_bp.route("/r/login", methods=["POST"])
+def api_login():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
+
+    username = data.get("username")
+    password = data.get("password")
+
+    user = User.query.filter_by(username=username).first()
+    if user and user.check_password(password):
+        login_user(user)
+        return jsonify({"success": True})
+    
+    return jsonify({"error": "Invalid credentials"}), 401
+
 @routes_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":

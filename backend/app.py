@@ -1,10 +1,11 @@
 import os
-from flask import Flask, redirect, url_for
+from flask import Flask, jsonify
 from extensions import db, login_manager
 from models import User
 from api import register_api
 from routes import register_routes
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -21,20 +22,27 @@ if sql_username and sql_password and sql_database_name:
         )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    # If testing across LAN you may need to set this
+    app.config["SESSION_COOKIE_SECURE"] = False  
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=[
+            "http://localhost:5173"
+        ]
+    )    
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "routes.login"
-
     @login_manager.unauthorized_handler
     def unauthorized_callback():
-        return redirect(url_for('routes.login', unauthorized=1))
+        return jsonify({"error": "Unauthorized"}), 401
 
     register_api(app)
     register_routes(app)
 
-    print("Starting application...")
     with app.app_context():
-        # db.drop_all() to reset database during development
         db.create_all()
         admin_username = os.getenv("UI_USERNAME")
         admin_password = os.getenv("UI_PASSWORD")

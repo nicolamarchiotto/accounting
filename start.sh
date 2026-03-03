@@ -47,7 +47,7 @@ echo "Flask PID: $FLASK_PID"
 # -----------------------------
 echo "Starting React frontend on port $REACT_PORT..."
 cd "../$REACT_APP_DIR"
-npm run dev -- --port $REACT_PORT &
+npm run dev -- --host 0.0.0.0 --port $REACT_PORT &
 REACT_PID=$!
 echo "React PID: $REACT_PID"
 
