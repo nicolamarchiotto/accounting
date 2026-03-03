@@ -20,5 +20,3 @@ python app.py
 
 working on import scripts
     - errors on add entries, improve error prompting for logging and to easily recognize error 
-
-Entries Fronted

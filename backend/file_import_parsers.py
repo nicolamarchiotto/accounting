@@ -1,5 +1,5 @@
 
-from models import Entry, Account, Owner, MovementType, Category, SubCategory
+from models import Account, MovementType, Category, SubCategory
 from extensions import db
 import pandas as pd
 
