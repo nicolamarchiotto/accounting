@@ -18,5 +18,11 @@ python app.py
 
 # TODO
 
-working on import scripts
+## Backend
+- working on import scripts
     - errors on add entries, improve error prompting for logging and to easily recognize error 
+
+## Frontend
+
+- Start working on frontend
+    - Move styles in unique file to have more consistent design 

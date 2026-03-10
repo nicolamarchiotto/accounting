@@ -1,66 +1,103 @@
-import { useState } from "react";
+// src/pages/Login.jsx
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Container,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+} from "@mui/material";
+import { useSnackbar } from "../components/SnackbarProvider";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { showSnackbar } = useSnackbar();
+
+  // Show snackbar if redirected due to authentication
+ useEffect(() => {
+    if (location.state?.mustLogin) {
+      showSnackbar("You must login to access this page.", "warning");
+
+      // Reset location state so snackbar doesn't show again
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate, showSnackbar]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
-
     try {
-      const response = await fetch("/r/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include", // VERY IMPORTANT for Flask sessions
-        body: JSON.stringify({ username: username, password: password })
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) {
         throw new Error("Invalid credentials");
       }
 
-      const data = await response.json();
-      console.log(data);
-      alert("Login successful!");
-
+      await response.json();
+      navigate("/home");
     } catch (err) {
-      setError("Invalid credentials");
+      showSnackbar("Invalid credentials", "error");
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "100px auto" }}>
-      <h2>Login page</h2>
+    <Container maxWidth="sm">
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Paper
+          sx={{ padding: 4, width: "100%" }}
+          elevation={3}
+          component="form"
+          onSubmit={handleLogin}
+        >
+          <Typography variant="h5" gutterBottom>
+            Login
+          </Typography>
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
+          <TextField
+            fullWidth
+            label="Username"
+            margin="normal"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ marginTop: 10 }}
-        />
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            margin="normal"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <button type="submit" style={{ marginTop: 15 }}>
-          Login
-        </button>
-
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
-    </div>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            Login
+          </Button>
+        </Paper>
+      </Box>
+    </Container>
   );
 }
 
