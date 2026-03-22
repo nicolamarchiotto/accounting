@@ -7,6 +7,7 @@ from extensions import db
 
 owners_bp = Blueprint("owners", __name__)
 
+@owners_bp.route('/api/owners', methods=['GET'])
 @owners_bp.route('/owners', methods=['GET'])
 @login_required
 def get_owners():

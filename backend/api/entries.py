@@ -445,6 +445,7 @@ def entries_import():
         "items": [e for e in objects],
     })
 
+@entries_bp.route("/api/entries/pivot", methods=["POST"])
 @entries_bp.route("/entries/pivot", methods=["POST"])
 @login_required
 def pivot_entries():
@@ -504,63 +505,76 @@ def pivot_entries():
 
         query = (
             db.session.query(
-                Account.id.label("group_id"),
-                Account.name.label("group_name"),
+                Account,
                 (
                     base_total + func.coalesce(Account.start_amount, 0)
                     if include_accounts_start_amount
                     else base_total
                 ).label("total_amount")
             )
-            .select_from(movements)
-            .join(Account, Account.id == movements.c.account_id)
-            .group_by(Account.id, Account.name)
+            .outerjoin(movements, Account.id == movements.c.account_id)  # <-- LEFT JOIN
+            .group_by(Account.id)
             .order_by(Account.name)
         )
 
+        results = query.all()
+
+        return jsonify([
+            {
+                "id": r.Account.id,
+                "name": r.Account.name,
+                "start_amount": float(r.Account.start_amount or 0),
+                "owner_id": r.Account.owner_id,
+                "owner_name": r.Account.owner.name,
+                "type": r.Account.account_type.value,  # include account type
+                "total_amount": float(r.total_amount)
+            }
+            for r in results
+        ])
     elif group_by == "category":
 
         query = (
             db.session.query(
-                Category.id.label("group_id"),
-                Category.name.label("group_name"),
-                func.coalesce(func.sum(movements.c.signed_amount), 0)
-                    .label("total_amount")
+                Category,
+                func.coalesce(func.sum(movements.c.signed_amount), 0).label("total_amount")
             )
             .join(Category, Category.id == movements.c.category_id)
-            .group_by(Category.id, Category.name)
+            .group_by(Category.id)
             .order_by(Category.name)
         )
+        
+        return jsonify([
+            {
+                "id": r.Category.id,
+                "name": r.Category.name,
+                "total_amount": float(r.total_amount)
+            }
+            for r in results
+        ])
 
     elif group_by == "owner":
-
         query = (
             db.session.query(
-                Owner.id.label("group_id"),
-                Owner.name.label("group_name"),
-                func.coalesce(func.sum(movements.c.signed_amount), 0)
-                    .label("total_amount")
+                Owner,
+                func.coalesce(func.sum(movements.c.signed_amount), 0).label("total_amount")
             )
             .join(Account, Account.id == movements.c.account_id)
             .join(Owner, Owner.id == Account.owner_id)
-            .group_by(Owner.id, Owner.name)
+            .group_by(Owner.id)
             .order_by(Owner.name)
         )
+        
+        return jsonify([
+            {
+                "id": r.Owner.id,
+                "name": r.Owner.name,
+                "total_amount": float(r.total_amount)
+            }
+            for r in results
+        ])
 
     else:
         return jsonify({"error": "Invalid group_by value"}), 400
-
-    results = query.all()
-
-    return jsonify([
-        {
-            "group_by_id": r.group_id,
-            "group_by_name": r.group_name,
-            "total_amount": float(r.total_amount)
-        }
-        for r in results
-    ])
-
 
 @event.listens_for(Entry, "before_insert")
 @event.listens_for(Entry, "before_update")

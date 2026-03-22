@@ -38,6 +38,7 @@ def home():
         return redirect(url_for("routes.login"))
     return render_template("home.html")
 
+@routes_bp.route("/api/logout", methods=["POST"])
 @routes_bp.route("/logout", methods=["POST"])
 def logout():
     logout_user()
@@ -78,12 +79,6 @@ def api_login():
         return jsonify({"success": True})
     
     return jsonify({"error": "Invalid credentials"}), 401
-
-@routes_bp.route("/api/logout", methods=["POST"])
-@login_required
-def api_logout():
-    logout_user()
-    return jsonify({"success": True}), 200
 
 @routes_bp.route("/api/me")
 @login_required

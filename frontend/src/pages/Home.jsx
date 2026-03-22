@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -14,19 +14,30 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Button
+  Grid,
+  Card,
+  CardContent,
+  CircularProgress,
+  Alert
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import HomeIcon from "@mui/icons-material/Home";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DashboardIcon from "@mui/icons-material/Dashboard";
+import ChipsContainer from "../components/ChipsContainer";
+import AccountCardContainer from "../components/AccountCardContainer";
 
 const drawerWidth = 200;
 
 function Home() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const [pivot, setPivot] = useState([]);
+  const [owners, setOwners] = useState([]);
+  const [ownersState, setOwnersState] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -40,6 +51,65 @@ function Home() {
 
     navigate("/");
   };
+
+  const fetchPivot = async () => {
+    try {
+      const res = await fetch("/api/entries/pivot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          group_by: "account",
+          include_transfers: true,
+          include_accounts_start_amount: true,
+          date: { from: "2025-07-10", to: "2026-03-15" }
+        })
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      setPivot(data);
+    } catch (e) {
+      setError(e.message || "Failed to load data");
+    }
+  };
+
+  const fetchOwners = async () => {
+    try {
+      const res = await fetch("/api/owners", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      setOwners(data);
+      const owners_state = {};
+      for (const owner in data) {
+        owners_state[data[owner].id] = true;
+      }
+      setOwnersState(owners_state);
+    } catch (e) {
+      setError(e.message || "Failed to load data");
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    fetchOwners();
+    fetchPivot();
+
+    setLoading(false);
+  }, []);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -63,7 +133,7 @@ function Home() {
           </IconButton>
 
           <Typography variant="h6" noWrap>
-            My Dashboard
+            Accouting
           </Typography>
         </Toolbar>
       </AppBar>
@@ -82,7 +152,7 @@ function Home() {
           }
         }}
       >
-        <Toolbar />
+        <Toolbar /> 
 
         <Divider />
 
@@ -123,24 +193,23 @@ function Home() {
         sx={{
           flexGrow: 1,
           bgcolor: "#f4f6f8",
-          p: 3,
+          pl: 3,
+          pr: 3,
+          pb: 3,
           minHeight: "100vh"
         }}
       >
-        <Toolbar />
-
-        <Typography variant="h4" gutterBottom>
-          Welcome
-        </Typography>
-
-        <Typography>
-          This is your dashboard content area.
-        </Typography>
-
         <Box mt={4}>
-          <Button variant="contained">
-            Example Action
-          </Button>
+          {loading ? (
+            <CircularProgress />
+          ) : error ? (
+            <Alert severity="error">{error}</Alert>
+          ) : (
+            <>
+              <ChipsContainer owners={owners} ownersState={ownersState} setOwnersState={setOwnersState} />
+              <AccountCardContainer account_list={pivot}/>
+            </>
+          )}
         </Box>
       </Box>
     </Box>

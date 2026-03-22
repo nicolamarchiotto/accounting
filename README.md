@@ -25,4 +25,5 @@ python app.py
 ## Frontend
 
 - Start working on frontend
-    - Move styles in unique file to have more consistent design 
+    - Implement account owner and account type filter
+    - Account divider by account owner
