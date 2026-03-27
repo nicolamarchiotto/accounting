@@ -134,6 +134,7 @@ def account(account_id):
         return jsonify({"error": "Failed to update account", "details": str(e)}), 500
 
 
+@accounts_bp.route("/api/account/types", methods=["GET"])
 @accounts_bp.route("/account/types", methods=["GET"])
 @login_required
 def account_types():

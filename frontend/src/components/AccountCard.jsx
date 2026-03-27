@@ -18,26 +18,26 @@ function AccountCard({ account }) {
       bg: "#E3F2FD",
       bigIcon: AccountBalanceIcon,
       fontSize: 70,
-      iconPosition: { right: 0, bottom: -4 }, // customizable position
+      iconPosition: { right: 0, bottom: 0 }, // customizable position
     },
     Cash: {
       bg: "#E8F5E9",
       bigIcon: AttachMoneyIcon,
       fontSize: 76,
-      iconPosition: { right: -18, bottom: -8 },
+      iconPosition: { right: -18, bottom: 0 },
     },
     Investment: {
       bg: "#FFF8E1",
       bigIcon: TrendingUpIcon,
       fontSize: 75,
-      iconPosition: { right: -2, bottom: -10 },
+      iconPosition: { right: -2, bottom: -8 },
       rotation: -10
     },
     Insurance: {
       bg: "#F3E5F5",
       bigIcon: ContactPageIcon,
       fontSize: 66,
-      iconPosition: { right: -6, bottom: -4 }
+      iconPosition: { right: -6, bottom: 0 }
     },
   };
 
@@ -49,7 +49,9 @@ function AccountCard({ account }) {
     <Card
       variant="outlined"
       sx={{
-        width: 160,
+        width: 150,
+        maxWidth: 150,
+        height: "90%",
         borderRadius: 3,
         boxShadow: 1,
         position: "relative",
@@ -93,6 +95,22 @@ function AccountCard({ account }) {
         >
           {account.name}
         </Typography>
+        {/*Account serial number*/}
+        {true &&  
+          <Typography
+            variant="subtitl2"
+            sx={{
+              fontSize: 9,
+              fontWeight: 600,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            title={account.name}
+          >
+            {account.name}
+          </Typography>
+        }
 
         {/* Amount */}
         <Typography
