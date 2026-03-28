@@ -43,6 +43,10 @@ def add_account(account_data, endpoint):
     owner_name = account_data.get("owner_name")
     account_type_str = account_data.get("account_type_str")
     start_amount = account_data.get("start_amount", 0.0)
+    color = account_data.get("color", "#E3F2FD")
+    serial = account_data.get("serial", "")
+    iban = account_data.get("iban", "")
+
     if not owner_name or not name or not account_type_str:
         print(f"❌ Missing data for account: {account_data}")
         return False
@@ -61,7 +65,10 @@ def add_account(account_data, endpoint):
             "name": name,
             "owner_name": owner_name,
             "account_type": account_type_str,
-            "start_amount": start_amount
+            "start_amount": start_amount,
+            "color": color,
+            "iban": iban,
+            "serial": serial
         }
     )
 

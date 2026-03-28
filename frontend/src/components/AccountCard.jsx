@@ -15,26 +15,22 @@ function AccountCard({ account }) {
 
   const accountTypeConfig = {
     Bank: {
-      bg: "#E3F2FD",
       bigIcon: AccountBalanceIcon,
       fontSize: 70,
       iconPosition: { right: 0, bottom: 0 }, // customizable position
     },
     Cash: {
-      bg: "#E8F5E9",
       bigIcon: AttachMoneyIcon,
       fontSize: 76,
       iconPosition: { right: -18, bottom: 0 },
     },
     Investment: {
-      bg: "#FFF8E1",
       bigIcon: TrendingUpIcon,
       fontSize: 75,
       iconPosition: { right: -2, bottom: -8 },
       rotation: -10
     },
     Insurance: {
-      bg: "#F3E5F5",
       bigIcon: ContactPageIcon,
       fontSize: 66,
       iconPosition: { right: -6, bottom: 0 }
@@ -51,11 +47,24 @@ function AccountCard({ account }) {
       sx={{
         width: 150,
         maxWidth: 150,
-        height: "90%",
+        height: "85%",
         borderRadius: 3,
         boxShadow: 1,
         position: "relative",
         overflow: "hidden",
+        background: account.color,
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          inset: 0,
+          background: `
+            radial-gradient(circle at 85% 80%, rgba(0,0,0,0.06) 0%, transparent 50%),
+            radial-gradient(circle at 10% 10%, rgba(255,255,255,0.35) 0%, transparent 45%),
+            linear-gradient(120deg, rgba(255,255,255,0.15) 0%, transparent 60%)
+          `,
+          zIndex: 0,
+          pointerEvents: "none",
+        },
       }}
     >
       {/* Background Icon with configurable position */}
@@ -95,26 +104,11 @@ function AccountCard({ account }) {
         >
           {account.name}
         </Typography>
-        {/*Account serial number*/}
-        {true &&  
-          <Typography
-            variant="subtitl2"
-            sx={{
-              fontSize: 9,
-              fontWeight: 600,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-            title={account.name}
-          >
-            {account.name}
-          </Typography>
-        }
+        
 
         {/* Amount */}
         <Typography
-          variant="body1"
+          variant="body2"
           sx={{
             fontWeight: 500,
             color: account.total_amount < 0 ? "error.main" : config.color,

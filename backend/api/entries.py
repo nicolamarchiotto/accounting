@@ -527,7 +527,10 @@ def pivot_entries():
                 "owner_id": r.Account.owner_id,
                 "owner_name": r.Account.owner.name,
                 "type": r.Account.account_type.value,  # include account type
-                "total_amount": float(r.total_amount)
+                "total_amount": float(r.total_amount),
+                "iban": r.Account.iban,
+                "serial": r.Account.serial,
+                "color": r.Account.color
             }
             for r in results
         ])

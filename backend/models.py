@@ -2,6 +2,8 @@ from extensions import db
 from flask_login import UserMixin
 import enum
 from sqlalchemy import Date
+from sqlalchemy.orm import validates
+import re
 
 class MovementType(enum.Enum):
     expense = 'Expense'
@@ -13,6 +15,8 @@ class AccountType(enum.Enum):
     bank = 'Bank'
     insurance = 'Insurance'
     investment = 'Investment'
+
+HEX_COLOR_REGEX = re.compile(r"^#([A-Fa-f0-9]{6})$")
 
 # ------------------------
 # Authentication user
@@ -60,6 +64,10 @@ class Account(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey("owners.id"), nullable=False)
     owner = db.relationship("Owner", back_populates="accounts")
 
+    iban = db.Column(db.String(34), nullable=True)
+    serial = db.Column(db.String(50), nullable=True)
+    color = db.Column(db.String(7), nullable=False, default="#E3F2FD")
+    
     # Source account entries
     entries = db.relationship(
         "Entry",
@@ -73,6 +81,21 @@ class Account(db.Model):
         foreign_keys="Entry.destination_account_id",
         back_populates="destination_account"
     )
+
+    @validates("color")
+    def validate_color(self, key, value):
+        if value is None:
+            return value  # allow null
+
+        if not isinstance(value, str):
+            raise ValueError("Color must be a string")
+
+        if not HEX_COLOR_REGEX.match(value):
+            raise ValueError(
+                "Invalid color format. Use hex format like '#AABBCC'"
+            )
+
+        return value.upper()  # normalize
 
 
 class Category(db.Model):

@@ -25,6 +25,10 @@ def accounts():
     account_type_str = data.get("account_type")
     account_name = data.get("name")
     start_amount = data.get("start_amount", 0.0)
+    color = data.get("color", "#E3F2FD")
+    serial = data.get("serial", "")
+    iban = data.get("iban", "")
+
 
     if(not account_name or not owner_id or not account_type_str):
         return jsonify({"error": "owner_id and account_type are required"}), 400
@@ -41,7 +45,10 @@ def accounts():
         name=account_name,
         account_type=account_type_enum,
         owner_id=owner_id,
-        start_amount=start_amount
+        start_amount=start_amount,
+        iban=iban,
+        serial=serial,
+        color=color
     )
 
     db.session.add(account)
@@ -57,7 +64,10 @@ def get_accounts():
             "name": a.name,
             "owner": a.owner.name,
             "account_type": a.account_type.value,
-            "start_amount": a.start_amount
+            "start_amount": a.start_amount,
+            "color": a.color,
+            "iban": a.iban,
+            "serial": a.serial
         }
         for a in Account.query.all()
     ]), 200
@@ -106,6 +116,9 @@ def account(account_id):
     new_account_type = data.get("account_type", "").strip()
     new_owner_id = data.get("owner_id", "").strip()
     new_start_amount = data.get("start_amount", "")
+    new_color = data.get("color", "")
+    new_iban = data.get("iban", "")
+    new_serial = data.get("serial", "")
         
     if not new_name or not new_account_type or not new_owner_id:
         return jsonify({"error": "New name is required"}), 400
@@ -126,7 +139,16 @@ def account(account_id):
 
         if new_start_amount != "":
             account.start_amount = float(new_start_amount)
-            
+        
+        if new_color != "":
+            account.color = new_color
+
+        if new_iban != "":
+            account.iban = new_iban
+
+        if new_serial != "":
+            account.serial = new_serial
+
         db.session.commit()
         return jsonify({"success": True, "message": f"account with ID {account_id} updated", "account": {"id": account.id, "name": account.name, "start_amount": account.start_amount}})
     except Exception as e:
