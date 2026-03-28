@@ -2,14 +2,17 @@ import {
   Typography,
   Card,
   CardContent,
-  Box
+  Box,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from "@mui/material";
+import { useState } from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ContactPageIcon from '@mui/icons-material/ContactPage';
 import Currency from "./Currency";
+import EditAccountDialog from "./EditAccountDialog";
 
 function AccountCard({ account }) {
 
@@ -41,9 +44,28 @@ function AccountCard({ account }) {
   const config = accountTypeConfig[typeKey] || accountTypeConfig.bank;
   const BigIcon = config.bigIcon;
 
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleEdit = () => {
+    console.log("Edit account", account);
+    handleClose();
+  };
+
+  const handleDelete = () => {
+    console.log("Delete account", account);
+    handleClose();
+  };
+
   return (
+    
     <Card
-      variant="outlined"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleOpen();
+      }}      variant="outlined"
       sx={{
         width: 150,
         maxWidth: 150,
@@ -53,6 +75,12 @@ function AccountCard({ account }) {
         position: "relative",
         overflow: "hidden",
         background: account.color,
+        cursor: "pointer",
+        transition: "0.2s",
+        "&:hover": {
+          transform: "scale(1.03)",
+          boxShadow: 4,
+        },
         "&::before": {
           content: '""',
           position: "absolute",
@@ -67,6 +95,13 @@ function AccountCard({ account }) {
         },
       }}
     >
+      <EditAccountDialog
+        open={open}
+        onClose={handleClose}
+        account={account}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       {/* Background Icon with configurable position */}
       <BigIcon
         sx={{
