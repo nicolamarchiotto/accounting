@@ -14,7 +14,7 @@ const ownerLayoutConfig = {
 };
 const accountTypeOrder = ["Cash", "Bank", "Investment", "Insurance"];
 
-function AccountCardContainer({ account_list, owners }) {
+function AccountCardContainer({ account_list, owners, account_types }) {
   // Filter out owners with no accounts
   const ownersWithAccounts = owners.filter(owner =>
     account_list.some(acc => acc.owner_id === owner.id)
@@ -46,6 +46,7 @@ function AccountCardContainer({ account_list, owners }) {
             const bIndex = accountTypeOrder.indexOf(b.type);
             return aIndex - bIndex;
           });
+        const ownerName = accounts[0]?.owner_name || owner.name;
 
         return (
           <Box
@@ -59,6 +60,13 @@ function AccountCardContainer({ account_list, owners }) {
               minWidth: 0 // prevents overflow issues
             }}
           >
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 1, ml: "4px", textAlign: "left", fontWeight: 600 }}
+            >
+              {ownerName}
+            </Typography>
+
             {/* Accounts list */}
             {accounts.length > 0 ? (
               <Grid container spacing={2} rowSpacing={0}>
@@ -70,7 +78,11 @@ function AccountCardContainer({ account_list, owners }) {
                     sm={6}
                     md={12}
                   >
-                    <AccountCard account={account} />
+                    <AccountCard
+                      account={account}
+                      owners={owners}
+                      accountTypes={account_types}
+                    />
                   </Grid>
                 ))}
               </Grid>

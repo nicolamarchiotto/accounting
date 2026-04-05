@@ -108,6 +108,7 @@ def remove_account(account_id):
         return jsonify({"error": "Failed to delete account", "details": str(e)}), 500
     
 
+@accounts_bp.route("/api/accounts/edit/<int:account_id>", methods=["PUT"])
 @accounts_bp.route("/accounts/edit/<int:account_id>", methods=["PUT"])
 @login_required
 def account(account_id):

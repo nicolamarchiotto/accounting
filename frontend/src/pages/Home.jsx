@@ -6,40 +6,36 @@ import {
   Toolbar,
   Typography,
   IconButton,
-  Drawer,
+  TextField,
   Box,
   CssBaseline,
-  Divider,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   CircularProgress,
   Alert
 } from "@mui/material";
 
-import MenuIcon from "@mui/icons-material/Menu";
-import HomeIcon from "@mui/icons-material/Home";
 import LogoutIcon from "@mui/icons-material/Logout";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import AccountFilterChips from "../components/AccountFilterChips";
 import AccountCardContainer from "../components/AccountCardContainer";
 
-const drawerWidth = 200;
+function getTodayIsoDate() {
+  return new Date().toISOString().split("T")[0];
+}
 
 function Home() {
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const [pivot, setPivot] = useState([]);
+  const [dateTo, setDateTo] = useState(getTodayIsoDate());
   const [owners, setOwners] = useState([]);
   const [ownersState, setOwnersState] = useState({});
   const [accountTypes, setAccountTypes] = useState([]);
   const [accountTypesState,setAccountTypesState] = useState({});
+  const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const toggleDrawer = () => {
-    setOpen(!open);
+  const toggleFilterBar = () => {
+    setIsFilterBarOpen((prev) => !prev);
   };
 
   const handleLogout = async () => {
@@ -51,7 +47,7 @@ function Home() {
     navigate("/");
   };
 
-  const fetchPivot = async () => {
+  const fetchPivot = async (toDate) => {
     try {
       const res = await fetch("/api/entries/pivot", {
         method: "POST",
@@ -60,7 +56,7 @@ function Home() {
           group_by: "account",
           include_transfers: true,
           include_accounts_start_amount: true,
-          date: { from: "2025-07-10", to: "2026-03-15" }
+          date: { from: "", to: toDate || "" }
         })
       });
 
@@ -125,15 +121,31 @@ function Home() {
   };
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    const loadInitialData = async () => {
+      setLoading(true);
+      setError(null);
 
-    fetchOwners();
-    fetchPivot();
-    fetchAccountTypes()
-    
-    setLoading(false);
+      await Promise.all([
+        fetchOwners(),
+        fetchAccountTypes()
+      ]);
+
+      setLoading(false);
+    };
+
+    loadInitialData();
   }, []);
+
+  useEffect(() => {
+    const loadPivot = async () => {
+      setLoading(true);
+      setError(null);
+      await fetchPivot(dateTo);
+      setLoading(false);
+    };
+
+    loadPivot();
+  }, [dateTo]);
 
   // Filter pivot based on ownersState and accountTypesState
   const filteredPivot = pivot.filter(
@@ -151,70 +163,122 @@ function Home() {
           zIndex: (theme) => theme.zIndex.drawer + 1
         }}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={toggleDrawer}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-
+        <Toolbar sx={{ position: "relative" }}>
           <Typography variant="h6" noWrap>
             Accouting
           </Typography>
+
+          <Box
+            sx={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            <TextField
+              type="date"
+              size="small"
+              label="Accounts balance at"
+              value={dateTo}
+              onChange={(event) => {
+                setDateTo(event.target.value);
+              }}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{
+                minWidth: 170,
+                "& .MuiInputBase-root": {
+                  color: "common.white",
+                  fontSize: "0.85rem",
+                  height: 36
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255,255,255,0.8)",
+                  fontSize: "0.82rem"
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(255,255,255,0.5)"
+                },
+                "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(255,255,255,0.9)"
+                },
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "common.white"
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "common.white"
+                },
+                "& .MuiSvgIcon-root": {
+                  color: "common.white"
+                },
+                "& input::-webkit-calendar-picker-indicator": {
+                  filter: "invert(1)"
+                },
+                "& input::-webkit-clear-button": {
+                  display: "none"
+                },
+                "& input::-ms-clear": {
+                  display: "none"
+                },
+                "& input::-ms-reveal": {
+                  display: "none"
+                }
+              }}
+            />
+          </Box>
+
+          <Box sx={{ ml: "auto", display: "flex", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                maxWidth: isFilterBarOpen ? 560 : 0,
+                opacity: isFilterBarOpen ? 1 : 0,
+                transform: isFilterBarOpen ? "translateX(0)" : "translateX(8px)",
+                transition: "max-width 0.35s ease, opacity 0.2s ease, transform 0.3s ease"
+              }}
+            >
+              <AccountFilterChips
+                owners={owners}
+                ownersState={ownersState}
+                setOwnersState={setOwnersState}
+                accountTypes={accountTypes}
+                accountTypesState={accountTypesState}
+                setAccountTypesState={setAccountTypesState}
+              />
+            </Box>
+
+            <IconButton
+              color="inherit"
+              onClick={toggleFilterBar}
+              aria-label="open filters"
+            >
+              <FilterListIcon />
+            </IconButton>
+
+            <Box
+              sx={{
+                mx: 0.75,
+                height: 22,
+                borderLeft: "1px solid rgba(255,255,255,0.45)"
+              }}
+            />
+
+            <IconButton
+              color="inherit"
+              onClick={handleLogout}
+              aria-label="logout"
+            >
+              <LogoutIcon />
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
-
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        open={open}
-        sx={{
-          width: open ? drawerWidth : 0,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: open ? drawerWidth : 0,
-            transition: "width 0.3s",
-            overflowX: "hidden"
-          }
-        }}
-      >
-        <Toolbar /> 
-
-        <Divider />
-
-        <List>
-          <ListItemButton>
-            <ListItemIcon>
-              <DashboardIcon />
-            </ListItemIcon>
-
-            {open && <ListItemText primary="Dashboard" />}
-          </ListItemButton>
-
-          <ListItemButton>
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-
-            {open && <ListItemText primary="Home" />}
-          </ListItemButton>
-        </List>
-
-        <Divider />
-
-        <List sx={{ mt: "auto" }}>
-          <ListItemButton onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-
-            {open && <ListItemText primary="Logout" />}
-          </ListItemButton>
-        </List>
-      </Drawer>
 
       {/* Main Content */}
       <Box
@@ -222,8 +286,6 @@ function Home() {
         sx={{
           flexGrow: 1,
           bgcolor: "#f4f6f8",
-          pl: 3,
-          pr: 3,
           pb: 3,
           minHeight: "100vh"
         }}
@@ -235,13 +297,6 @@ function Home() {
             <Alert severity="error">{error}</Alert>
           ) : (
             <>
-              <AccountFilterChips 
-                owners={owners}
-                ownersState={ownersState}
-                setOwnersState={setOwnersState}
-                accountTypes={accountTypes}
-                accountTypesState={accountTypesState}
-                setAccountTypesState={setAccountTypesState}/>
               <AccountCardContainer
                 account_list={filteredPivot}
                 owners={owners}

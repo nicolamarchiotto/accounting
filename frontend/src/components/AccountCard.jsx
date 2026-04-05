@@ -2,10 +2,9 @@ import {
   Typography,
   Card,
   CardContent,
-  Box,
-  Dialog, DialogTitle, DialogContent, DialogActions, Button
+  Box
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
@@ -14,7 +13,7 @@ import ContactPageIcon from '@mui/icons-material/ContactPage';
 import Currency from "./Currency";
 import EditAccountDialog from "./EditAccountDialog";
 
-function AccountCard({ account }) {
+function AccountCard({ account, owners, accountTypes }) {
 
   const accountTypeConfig = {
     Bank: {
@@ -40,7 +39,13 @@ function AccountCard({ account }) {
     },
   };
 
-  const typeKey = account.type?.key || account.type;
+  const [currentAccount, setCurrentAccount] = useState(account);
+
+  useEffect(() => {
+    setCurrentAccount(account);
+  }, [account]);
+
+  const typeKey = currentAccount.type?.key || currentAccount.type;
   const config = accountTypeConfig[typeKey] || accountTypeConfig.bank;
   const BigIcon = config.bigIcon;
 
@@ -49,14 +54,15 @@ function AccountCard({ account }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleEdit = () => {
-    console.log("Edit account", account);
-    handleClose();
+  const handleEdit = (updatedAccount) => {
+    setCurrentAccount(updatedAccount);
+    console.log("Edit account", updatedAccount);
   };
 
   const handleDelete = () => {
-    console.log("Delete account", account);
+    console.log("Delete account", currentAccount);
     handleClose();
+    
   };
 
   return (
@@ -67,14 +73,14 @@ function AccountCard({ account }) {
         handleOpen();
       }}      variant="outlined"
       sx={{
-        width: 150,
+        width: 145,
         maxWidth: 150,
         height: "85%",
         borderRadius: 3,
         boxShadow: 1,
         position: "relative",
         overflow: "hidden",
-        background: account.color,
+        background: currentAccount.color,
         cursor: "pointer",
         transition: "0.2s",
         "&:hover": {
@@ -98,7 +104,9 @@ function AccountCard({ account }) {
       <EditAccountDialog
         open={open}
         onClose={handleClose}
-        account={account}
+        account={currentAccount}
+        owners={owners}
+        accountTypes={accountTypes}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
@@ -129,7 +137,7 @@ function AccountCard({ account }) {
         <Typography
           variant="subtitl2"
           sx={{
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 600,
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -137,7 +145,7 @@ function AccountCard({ account }) {
           }}
           title={account.name}
         >
-          {account.name}
+          {currentAccount.name}
         </Typography>
         
 
@@ -146,10 +154,10 @@ function AccountCard({ account }) {
           variant="body2"
           sx={{
             fontWeight: 500,
-            color: account.total_amount < 0 ? "error.main" : config.color,
+            color: currentAccount.total_amount < 0 ? "error.main" : config.color,
           }}
         >
-          {Number(account.total_amount).toFixed(2)} <Currency/>
+          {Number(currentAccount.total_amount).toFixed(2)} <Currency/>
         </Typography>
 
         {/* Owner */}
@@ -170,9 +178,9 @@ function AccountCard({ account }) {
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
             }}
-            title={account.owner_name}
+            title={currentAccount.owner_name}
           >
-            {account.owner_name}
+            {currentAccount.owner_name}
           </Typography>
         </Box>
       </CardContent>
