@@ -17,13 +17,41 @@ import { useEffect, useState } from "react";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
 
 const PRESET_ACCOUNT_COLORS = [
-  "#F28B82", "#FFAB91", "#FFCC80", "#FFD54F", "#FFF176", "#DCE775",
-  "#AED581", "#81C784", "#4DB6AC", "#4DD0E1", "#4FC3F7", "#64B5F6",
-  "#7986CB", "#9575CD", "#BA68C8", "#F06292", "#E57373", "#FF8A65",
-  "#FFB74D", "#FBC02D", "#D4E157", "#9CCC65", "#66BB6A", "#26A69A",
-  "#26C6DA", "#29B6F6", "#42A5F5", "#5C6BC0", "#AB47BC", "#EC407A"
-];
+  "#D32F2F", // deep red
+  "#E64A19", // deep orange
+  "#F57C00", // dark orange
+  "#F9A825", // amber (darkened)
+  "#FBC02D", // strong yellow (darkened)
+  "#9E9D24", // olive yellow-green
 
+  "#558B2F", // dark green
+  "#2E7D32", // green
+  "#00796B", // teal
+  "#00838F", // cyan teal
+  "#0277BD", // blue
+  "#1565C0", // deeper blue
+
+  "#283593", // indigo
+  "#4527A0", // deep purple
+  "#6A1B9A", // purple
+  "#AD1457", // pink/magenta deep
+  "#C62828", // red deep
+  "#D84315", // deep orange-red
+
+  "#EF6C00", // strong orange
+  "#F9A825", // amber
+  "#827717", // olive
+  "#558B2F", // green
+  "#2E7D32", // dark green
+  "#00695C", // deep teal
+
+  "#00838F", // cyan
+  "#0277BD", // blue
+  "#1565C0", // blue deep
+  "#303F9F", // indigo
+  "#6A1B9A", // purple
+  "#C2185B"  // deep pink
+];
 const CUSTOM_COLOR_OPTION = "__CUSTOM__";
 
 function isValidHexColor(value) {
@@ -301,7 +329,7 @@ function EditAccountDialog({
                     }
                     onChange={handlePresetDropdownChange}
                   >
-                    {PRESET_ACCOUNT_COLORS.map((color, index) => (
+                    {PRESET_ACCOUNT_COLORS.map((color) => (
                       <MenuItem key={color} value={color}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
                           <Box
@@ -313,7 +341,7 @@ function EditAccountDialog({
                               backgroundColor: color
                             }}
                           />
-                          <Typography variant="body2">Vibrant {index + 1}</Typography>
+                          <Typography variant="body2">{color.toUpperCase()}</Typography>
                         </Box>
                       </MenuItem>
                     ))}

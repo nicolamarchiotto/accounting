@@ -14,8 +14,6 @@ import {
 } from "@mui/material";
 
 import LogoutIcon from "@mui/icons-material/Logout";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import AccountFilterChips from "../components/AccountFilterChips";
 import AccountCardContainer from "../components/AccountCardContainer";
 
 function getTodayIsoDate() {
@@ -30,13 +28,8 @@ function Home() {
   const [ownersState, setOwnersState] = useState({});
   const [accountTypes, setAccountTypes] = useState([]);
   const [accountTypesState,setAccountTypesState] = useState({});
-  const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const toggleFilterBar = () => {
-    setIsFilterBarOpen((prev) => !prev);
-  };
 
   const handleLogout = async () => {
     await fetch("/api/logout", {
@@ -147,11 +140,6 @@ function Home() {
     loadPivot();
   }, [dateTo]);
 
-  // Filter pivot based on ownersState and accountTypesState
-  const filteredPivot = pivot.filter(
-    acc => ownersState[acc.owner_id] && accountTypesState[acc.type]
-  );
-
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -230,45 +218,6 @@ function Home() {
           </Box>
 
           <Box sx={{ ml: "auto", display: "flex", alignItems: "center" }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                maxWidth: isFilterBarOpen ? 560 : 0,
-                opacity: isFilterBarOpen ? 1 : 0,
-                transform: isFilterBarOpen ? "translateX(0)" : "translateX(8px)",
-                transition: "max-width 0.35s ease, opacity 0.2s ease, transform 0.3s ease"
-              }}
-            >
-              <AccountFilterChips
-                owners={owners}
-                ownersState={ownersState}
-                setOwnersState={setOwnersState}
-                accountTypes={accountTypes}
-                accountTypesState={accountTypesState}
-                setAccountTypesState={setAccountTypesState}
-              />
-            </Box>
-
-            <IconButton
-              color="inherit"
-              onClick={toggleFilterBar}
-              aria-label="open filters"
-            >
-              <FilterListIcon />
-            </IconButton>
-
-            <Box
-              sx={{
-                mx: 0.75,
-                height: 22,
-                borderLeft: "1px solid rgba(255,255,255,0.45)"
-              }}
-            />
-
             <IconButton
               color="inherit"
               onClick={handleLogout}
@@ -298,9 +247,14 @@ function Home() {
           ) : (
             <>
               <AccountCardContainer
-                account_list={filteredPivot}
+                account_list={pivot}
                 owners={owners}
-                account_types={accountTypes}/>
+                account_types={accountTypes}
+                ownersState={ownersState}
+                accountTypesState={accountTypesState}
+                setOwnersState={setOwnersState}
+                setAccountTypesState={setAccountTypesState}
+              />
             </>
           )}
         </Box>

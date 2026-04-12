@@ -10,10 +10,13 @@ import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ContactPageIcon from '@mui/icons-material/ContactPage';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import InfoIcon from '@mui/icons-material/InfoOutlined';
 import Currency from "./Currency";
 import EditAccountDialog from "./EditAccountDialog";
 
-function AccountCard({ account, owners, accountTypes }) {
+function AccountCard({ account, owners, accountTypes, isEnabled = true }) {
 
   const accountTypeConfig = {
     Bank: {
@@ -46,10 +49,13 @@ function AccountCard({ account, owners, accountTypes }) {
   }, [account]);
 
   const typeKey = currentAccount.type?.key || currentAccount.type;
-  const config = accountTypeConfig[typeKey] || accountTypeConfig.bank;
+  const config = accountTypeConfig[typeKey] || accountTypeConfig.Bank;
   const BigIcon = config.bigIcon;
+  const serialValue = String(currentAccount.serial ?? "").trim();
+  const checked = isEnabled;
 
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -68,37 +74,22 @@ function AccountCard({ account, owners, accountTypes }) {
   return (
     
     <Card
-      onClick={(e) => {
-        e.stopPropagation();
-        handleOpen();
-      }}      variant="outlined"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      variant="outlined"
       sx={{
-        width: 145,
-        maxWidth: 150,
-        height: "85%",
+        width: 170,
+        maxWidth: 170,
         borderRadius: 3,
-        boxShadow: 1,
+        boxShadow: checked ? 1 : 0,
         position: "relative",
         overflow: "hidden",
-        background: currentAccount.color,
-        cursor: "pointer",
-        transition: "0.2s",
-        "&:hover": {
-          transform: "scale(1.03)",
-          boxShadow: 4,
-        },
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          inset: 0,
-          background: `
-            radial-gradient(circle at 85% 80%, rgba(0,0,0,0.06) 0%, transparent 50%),
-            radial-gradient(circle at 10% 10%, rgba(255,255,255,0.35) 0%, transparent 45%),
-            linear-gradient(120deg, rgba(255,255,255,0.15) 0%, transparent 60%)
-          `,
-          zIndex: 0,
-          pointerEvents: "none",
-        },
+        background: checked ? currentAccount.color : "#9ea1a5",
+        borderColor: checked ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.28)",
+        opacity: checked ? 1 : 0.82,
+        filter: checked ? "none" : "saturate(0.2) brightness(0.92)",
+        transition: "background 180ms ease, opacity 180ms ease, filter 180ms ease, box-shadow 180ms ease",
+        cursor: "default",
       }}
     >
       <EditAccountDialog
@@ -110,12 +101,84 @@ function AccountCard({ account, owners, accountTypes }) {
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
+      {/* Icons in top right corner, animated on card hover */}
+      <>
+        <InfoIcon
+          onClick={(e) => { e.stopPropagation(); handleOpen(); }}
+          sx={{
+            position: "absolute",
+            top: 6,
+            right: 28,
+            fontSize: 18,
+            color: checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.65)",
+            zIndex: 2,
+            cursor: hovered ? "pointer" : "default",
+            opacity: hovered ? 1 : 0,
+            transform: hovered ? "scale(1)" : "scale(0.85)",
+            pointerEvents: hovered ? "auto" : "none",
+            transition: "opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease",
+            "&:hover": {
+              transform: "scale(1.12)",
+              color: checked ? "#FFFFFF" : "rgba(255, 255, 255, 0.82)",
+            },
+          }}
+        />
+        {checked
+          ? <CheckCircleIcon
+              sx={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                fontSize: 18,
+                color: isEnabled
+                  ? (checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.65)")
+                  : "rgba(245, 245, 245, 0.45)",
+                zIndex: 2,
+                cursor: "default",
+                opacity: hovered ? 1 : 0,
+                transform: hovered ? "scale(1)" : "scale(0.85)",
+                pointerEvents: "none",
+                transition: "opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease",
+                "&:hover": {
+                  transform: "scale(1.12)",
+                  color: isEnabled
+                    ? (checked ? "#FFFFFF" : "rgba(255, 255, 255, 0.82)")
+                    : "rgba(245, 245, 245, 0.45)",
+                },
+              }}
+            />
+          : <CheckCircleOutlineIcon
+              sx={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                fontSize: 18,
+                color: isEnabled
+                  ? (checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.65)")
+                  : "rgba(245, 245, 245, 0.45)",
+                zIndex: 2,
+                cursor: "default",
+                opacity: hovered ? 1 : 0,
+                transform: hovered ? "scale(1)" : "scale(0.85)",
+                pointerEvents: "none",
+                transition: "opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease",
+                "&:hover": {
+                  transform: "scale(1.12)",
+                  color: isEnabled
+                    ? (checked ? "#FFFFFF" : "rgba(255, 255, 255, 0.82)")
+                    : "rgba(245, 245, 245, 0.45)",
+                },
+              }}
+            />
+        }
+      </>
+
       {/* Background Icon with configurable position */}
       <BigIcon
         sx={{
           position: "absolute",
-          opacity: 0.08,
-          color: "#191a18",
+          opacity: checked ? 0.25 : 0.14,
+          color: "#F5F5F5",
           pointerEvents: "none",
           fontSize: config.fontSize, // use fontSize from map
           transform: `rotate(${config.rotation || 0}deg)`,
@@ -127,21 +190,25 @@ function AccountCard({ account, owners, accountTypes }) {
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: 0.5,
-          padding: "10px",
+          pt: "10px",
+          pl: "10px",
+          "&:last-child": {
+            pb: "14px",
+          },
           position: "relative",
           zIndex: 1,
         }}
       >
         {/* Account Name */}
         <Typography
-          variant="subtitl2"
+          variant="subtitle2"
           sx={{
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: 600,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
+            color: checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.72)"
           }}
           title={account.name}
         >
@@ -154,35 +221,25 @@ function AccountCard({ account, owners, accountTypes }) {
           variant="body2"
           sx={{
             fontWeight: 500,
-            color: currentAccount.total_amount < 0 ? "error.main" : config.color,
+            color: checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.72)"
           }}
         >
           {Number(currentAccount.total_amount).toFixed(2)} <Currency/>
         </Typography>
 
-        {/* Owner */}
-        <Box
+        <Typography
+          variant="caption"
           sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
             overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            visibility: serialValue ? "visible" : "hidden",
+            color: checked ? "rgba(245, 245, 245, 0.9)" : "rgba(245, 245, 245, 0.62)",
           }}
+          title={serialValue}
         >
-          <AccountCircleIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-          <Typography
-            variant="caption"
-            sx={{
-              color: "text.secondary",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-            title={currentAccount.owner_name}
-          >
-            {currentAccount.owner_name}
-          </Typography>
-        </Box>
+          {serialValue || "-"}
+        </Typography>
       </CardContent>
     </Card>
   );
