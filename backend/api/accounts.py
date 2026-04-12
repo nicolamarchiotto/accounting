@@ -118,8 +118,8 @@ def account(account_id):
     new_owner_id = data.get("owner_id", "").strip()
     new_start_amount = data.get("start_amount", "")
     new_color = data.get("color", "")
-    new_iban = data.get("iban", "")
-    new_serial = data.get("serial", "")
+    new_iban = data.get("iban")
+    new_serial = data.get("serial")
         
     if not new_name or not new_account_type or not new_owner_id:
         return jsonify({"error": "New name is required"}), 400
@@ -144,11 +144,13 @@ def account(account_id):
         if new_color != "":
             account.color = new_color
 
-        if new_iban != "":
-            account.iban = new_iban
+        # Preserve existing value only when the field is omitted from payload.
+        # If present as an empty string, clear it in DB.
+        if new_iban is not None:
+            account.iban = (new_iban or "").strip()
 
-        if new_serial != "":
-            account.serial = new_serial
+        if new_serial is not None:
+            account.serial = (new_serial or "").strip()
 
         db.session.commit()
         return jsonify({"success": True, "message": f"account with ID {account_id} updated", "account": {"id": account.id, "name": account.name, "start_amount": account.start_amount}})
