@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import EntriesContainer from "../components/EntriesContainer";
+import Statistics from "../components/Statistics";
 
 import {
   AppBar,
@@ -14,6 +16,8 @@ import {
 } from "@mui/material";
 
 import LogoutIcon from "@mui/icons-material/Logout";
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AccountCardContainer from "../components/AccountCardContainer";
 
 function getTodayIsoDate() {
@@ -30,6 +34,9 @@ function Home() {
   const [accountTypesState,setAccountTypesState] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [entries, setEntries] = useState([]);
+  const [entriesLoading, setEntriesLoading] = useState(false);
+  const [entriesError, setEntriesError] = useState(null);
 
   const handleLogout = async () => {
     await fetch("/api/logout", {
@@ -113,6 +120,62 @@ function Home() {
     }
   };
 
+  const getSelectedOwnerIds = () =>
+    Object.entries(ownersState)
+      .filter(([, value]) => Boolean(value))
+      .map(([key]) => Number(key));
+
+  const getFilteredAccountIds = () =>
+    pivot
+      .filter((acc) => {
+        const ownerSelected = Boolean(ownersState[String(acc.owner_id)]);
+        const accountTypeKey = acc.type?.key || acc.type || "";
+        const typeSelected = Boolean(accountTypesState[String(accountTypeKey)]);
+        return ownerSelected && typeSelected;
+      })
+      .map((acc) => acc.id);
+
+  const fetchEntries = async () => {
+    setEntriesLoading(true);
+    setEntriesError(null);
+    try {
+      const selectedOwners = getSelectedOwnerIds();
+      const selectedAccountIds = getFilteredAccountIds();
+
+      if (selectedOwners.length === 0 || selectedAccountIds.length === 0) {
+        setEntries([]);
+        return;
+      }
+
+      const res = await fetch("/api/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          owners: selectedOwners,
+          account_ids: selectedAccountIds,
+          movement_types: ["expense"],
+          date: { from: "", to: dateTo },
+          page: 1,
+          per_page: 100
+        })
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      console.log("Fetched entries:", data);
+      setEntries(data.items || []);
+    } catch (e) {
+      setEntriesError(e.message || "Failed to load entries");
+    } finally {
+      setEntriesLoading(false);
+    }
+  };
+
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
@@ -139,6 +202,22 @@ function Home() {
 
     loadPivot();
   }, [dateTo]);
+
+  useEffect(() => {
+    if (pivot.length === 0 || owners.length === 0) {
+      return;
+    }
+
+    fetchEntries();
+  }, [pivot, ownersState, accountTypesState, dateTo]);
+
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [middleOpen, setMiddleOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+
+  const collapsedWidth = "fit-content"; // collapsed width should fit header text
+  const thirdPercent = "33.333%";
+  const rightPercent = "30%";
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -235,27 +314,87 @@ function Home() {
         sx={{
           flexGrow: 1,
           bgcolor: "#f4f6f8",
-          pb: 3,
-          minHeight: "100vh"
+          minHeight: "100vh",
+          overflowX: "hidden"
         }}
       >
-        <Box mt={4}>
+        <Box mt={4} sx={{ px: 2 }}>
           {loading ? (
             <CircularProgress />
           ) : error ? (
             <Alert severity="error">{error}</Alert>
           ) : (
-            <>
-              <AccountCardContainer
-                account_list={pivot}
-                owners={owners}
-                account_types={accountTypes}
-                ownersState={ownersState}
-                accountTypesState={accountTypesState}
-                setOwnersState={setOwnersState}
-                setAccountTypesState={setAccountTypesState}
-              />
-            </>
+            <Box sx={{ display: "flex", gap: 2, width: "100%", boxSizing: "border-box", overflowX: "hidden" }}>
+              {/* Left column - Account cards */}
+              <Box sx={{
+                width: leftOpen ? thirdPercent : collapsedWidth,
+                transition: "width 240ms ease",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                flex: leftOpen ? `0 0 ${thirdPercent}` : '0 0 auto',
+                minWidth: leftOpen ? undefined : 120,
+                maxWidth: leftOpen ? undefined : 360,
+                boxSizing: "border-box"
+              }}>
+                <Box sx={{ flex: 1, overflow: "auto", px: leftOpen ? 1 : 0}}>
+                  <AccountCardContainer
+                    account_list={pivot}
+                    owners={owners}
+                    account_types={accountTypes}
+                    ownersState={ownersState}
+                    accountTypesState={accountTypesState}
+                    setOwnersState={setOwnersState}
+                    setAccountTypesState={setAccountTypesState}
+                    expanded={leftOpen}
+                    onToggle={(val) => setLeftOpen(Boolean(val))}
+                  />
+                </Box>
+              </Box>
+
+              {/* Middle column - Entries */}
+              <Box sx={{
+                width: middleOpen ? thirdPercent : collapsedWidth,
+                transition: "width 240ms ease",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                flex: middleOpen ? `0 0 ${thirdPercent}` : '0 0 auto',
+                minWidth: middleOpen ? undefined : 120,
+                maxWidth: middleOpen ? undefined : 360,
+                boxSizing: "border-box"
+              }}>
+                <Box sx={{ flex: 1, overflow: "auto", px: middleOpen ? 1 : 0}}>
+                  <EntriesContainer
+                    entries={entries}
+                    loading={entriesLoading}
+                    error={entriesError}
+                    expanded={middleOpen}
+                    onToggle={(val) => setMiddleOpen(Boolean(val))}
+                  />
+                </Box>
+              </Box>
+
+              {/* Right column - Statistics */}
+              <Box sx={{
+                width: rightOpen ? rightPercent : collapsedWidth,
+                transition: "width 240ms ease",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                flex: rightOpen ? `0 0 ${rightPercent}` : '0 0 auto',
+                minWidth: rightOpen ? undefined : 120,
+                maxWidth: rightOpen ? undefined : 360,
+                boxSizing: "border-box"
+              }}>
+                <Box sx={{ flex: 1, overflow: "auto", px: rightOpen ? 1 : 0}}>
+                  <Statistics
+                    expanded={rightOpen}
+                    onToggle={(val) => setRightOpen(Boolean(val))}
+                  />
+                </Box>
+              </Box>
+            </Box>
           )}
         </Box>
       </Box>
