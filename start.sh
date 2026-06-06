@@ -20,26 +20,42 @@ if [ ! -d "$VENV_DIR" ]; then
     python3 -m venv "$VENV_DIR"
 fi
 
-# Activate the virtual environment
 echo "Activating virtual environment..."
 source "$VENV_DIR/bin/activate"
 
 # Install requirements
 if [ -f "$REQUIREMENTS_FILE" ]; then
-    echo "Installing Python dependencies from requirements.txt..."
+    echo "Installing Python dependencies..."
     pip install --upgrade pip
     pip install -r "$REQUIREMENTS_FILE"
-else
-    echo "No requirements.txt found at $REQUIREMENTS_FILE"
 fi
+
+# -----------------------------
+# Free ports (IMPORTANT FIX)
+# -----------------------------
+echo "Checking ports..."
+
+sudo fuser -k ${FLASK_PORT}/tcp 2>/dev/null || true
+sudo fuser -k ${REACT_PORT}/tcp 2>/dev/null || true
+
+sleep 1
 
 # -----------------------------
 # Start Flask backend
 # -----------------------------
 echo "Starting Flask backend on port $FLASK_PORT..."
 cd "$FLASK_APP_DIR"
+
 python app.py &
 FLASK_PID=$!
+
+sleep 2
+
+if ! kill -0 "$FLASK_PID" 2>/dev/null; then
+    echo "ERROR: Flask failed to start"
+    exit 1
+fi
+
 echo "Flask PID: $FLASK_PID"
 
 # -----------------------------
@@ -47,32 +63,46 @@ echo "Flask PID: $FLASK_PID"
 # -----------------------------
 echo "Starting React frontend on port $REACT_PORT..."
 cd "../$REACT_APP_DIR"
+
 npm run dev -- --host 0.0.0.0 --port $REACT_PORT &
 REACT_PID=$!
+
+sleep 2
+
+if ! kill -0 "$REACT_PID" 2>/dev/null; then
+    echo "ERROR: React failed to start"
+    exit 1
+fi
+
 echo "React PID: $REACT_PID"
 
 # -----------------------------
-# Function to shutdown both apps
+# Cleanup handler
 # -----------------------------
 cleanup() {
     echo ""
-    echo "Shutting down apps..."
-    kill $FLASK_PID 2>/dev/null || true
-    kill $REACT_PID 2>/dev/null || true
-    wait $FLASK_PID 2>/dev/null
-    wait $REACT_PID 2>/dev/null
-    echo "Done!"
+    echo "Shutting down..."
+
+    kill "$FLASK_PID" 2>/dev/null || true
+    kill "$REACT_PID" 2>/dev/null || true
+
+    wait "$FLASK_PID" 2>/dev/null || true
+    wait "$REACT_PID" 2>/dev/null || true
+
+    echo "Stopped."
     exit 0
 }
 
-# Trap CTRL+C and EXIT signals
-trap cleanup SIGINT SIGTERM
+trap cleanup SIGINT SIGTERM EXIT
 
-# Optional: listen for 'q' key to quit
+# -----------------------------
+# Keep alive
+# -----------------------------
 echo "Press 'q' then Enter to quit..."
+
 while true; do
     read -r -n 1 key
-    if [[ $key == "q" ]]; then
+    if [[ "$key" == "q" ]]; then
         cleanup
     fi
 done

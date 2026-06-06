@@ -12,18 +12,21 @@ User helpers/postgres_* scripts to setup postgres instance
 
 # Run application
 
+start script does not work correctly
+
+
+Backend: Activate python env and run app manuall
+
 ```
 python app.py
 ```
+
+Frontend:
+
+npm run dev -- --host 0.0.0.0 --port 5173
 
 # TODO
 
 ## Backend
 - working on import scripts
     - errors on add entries, improve error prompting for logging and to easily recognize error 
-
-## Frontend
-
-- Start working on frontend
-    - Implement account owner and account type filter
-    - Account divider by account owner

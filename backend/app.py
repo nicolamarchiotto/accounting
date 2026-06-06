@@ -67,6 +67,6 @@ if sql_username and sql_password and sql_database_name:
 
     if __name__ == "__main__":
         print("Running Flask app...")
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
 else:
     print("Database configuration is missing. Please set SQL_USERNAME, SQL_PASSWORD, and SQL_DATABASE_NAME environment variables.")
