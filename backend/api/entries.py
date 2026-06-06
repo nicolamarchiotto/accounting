@@ -199,9 +199,14 @@ def get_entries(body):
     
     # Base query
     query = Entry.query
+    joined_account = False
 
     # Filter owners
     if owners and owners != []:
+        # We reference Account.owner_id below, so join Account to avoid a cartesian product
+        if not joined_account:
+            query = query.join(Account, Entry.account)
+            joined_account = True
         query = query.filter(Account.owner_id.in_(owners))
 
     # Filter accounts
@@ -215,6 +220,9 @@ def get_entries(body):
     else:
         # If accounts empty but owners provided, filter accounts by owners
         if owners and owners != []:
+            if not joined_account:
+                query = query.join(Account, Entry.account)
+                joined_account = True
             query = query.filter(Account.owner_id.in_(owners))
         
     # Filter movement_types
@@ -273,6 +281,7 @@ def get_entries(body):
 
     return query 
 
+@entries_bp.route("/api/entries", methods=["POST"])
 @entries_bp.route("/entries", methods=["POST"])
 @login_required
 def filter_entries():
