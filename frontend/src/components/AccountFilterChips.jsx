@@ -77,6 +77,9 @@ function AccountFilterChips({ owners, ownersState, setOwnersState, accountTypes,
         return (
           <Tooltip key={g} title={g}>
             <IconButton
+              component="span"
+              role="button"
+              tabIndex={0}
               size="small"
               onClick={() => {
                 setAccountTypesState((prev) => ({
@@ -104,6 +107,9 @@ function AccountFilterChips({ owners, ownersState, setOwnersState, accountTypes,
         return (
           <Tooltip key={g.id} title={g.name}>
             <IconButton
+              component="span"
+              role="button"
+              tabIndex={0}
               size="small"
               onClick={() => {
                 setOwnersState((prev) => ({
@@ -134,6 +140,9 @@ function AccountFilterChips({ owners, ownersState, setOwnersState, accountTypes,
 
       <Tooltip title="Reset filters">
         <IconButton
+          component="span"
+          role="button"
+          tabIndex={0}
           size="small"
           onClick={resetFilters}
           sx={{
