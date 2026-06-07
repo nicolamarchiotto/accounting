@@ -78,8 +78,8 @@ function AccountCard({ account, owners, accountTypes, isEnabled = true, onToggle
       onMouseLeave={() => setHovered(false)}
       variant="outlined"
       sx={{
-        width: 170,
-        maxWidth: 170,
+        width: 160,
+        maxWidth: 160,
         height: 96,
         borderRadius: 3,
         boxShadow: checked ? 1 : 0,
