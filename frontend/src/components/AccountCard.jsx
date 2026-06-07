@@ -16,7 +16,7 @@ import InfoIcon from '@mui/icons-material/InfoOutlined';
 import Currency from "./Currency";
 import EditAccountDialog from "./EditAccountDialog";
 
-function AccountCard({ account, owners, accountTypes, isEnabled = true }) {
+function AccountCard({ account, owners, accountTypes, isEnabled = true, onToggle }) {
 
   const accountTypeConfig = {
     Bank: {
@@ -80,6 +80,7 @@ function AccountCard({ account, owners, accountTypes, isEnabled = true }) {
       sx={{
         width: 170,
         maxWidth: 170,
+        height: 96,
         borderRadius: 3,
         boxShadow: checked ? 1 : 0,
         position: "relative",
@@ -123,54 +124,57 @@ function AccountCard({ account, owners, accountTypes, isEnabled = true }) {
             },
           }}
         />
-        {checked
-          ? <CheckCircleIcon
-              sx={{
-                position: "absolute",
-                top: 6,
-                right: 6,
-                fontSize: 18,
+        {checked ? (
+          <CheckCircleIcon
+            onClick={(e) => { e.stopPropagation(); if (onToggle) onToggle(account.id, false); }}
+            sx={{
+              position: "absolute",
+              top: 6,
+              right: 6,
+              fontSize: 18,
+              color: isEnabled
+                ? (checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.65)")
+                : "rgba(245, 245, 245, 0.45)",
+              zIndex: 2,
+              cursor: "pointer",
+              opacity: hovered ? 1 : 0,
+              transform: hovered ? "scale(1)" : "scale(0.85)",
+              pointerEvents: "auto",
+              transition: "opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease",
+              "&:hover": {
+                transform: "scale(1.12)",
                 color: isEnabled
-                  ? (checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.65)")
+                  ? (checked ? "#FFFFFF" : "rgba(255, 255, 255, 0.82)")
                   : "rgba(245, 245, 245, 0.45)",
-                zIndex: 2,
-                cursor: "default",
-                opacity: hovered ? 1 : 0,
-                transform: hovered ? "scale(1)" : "scale(0.85)",
-                pointerEvents: "none",
-                transition: "opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease",
-                "&:hover": {
-                  transform: "scale(1.12)",
-                  color: isEnabled
-                    ? (checked ? "#FFFFFF" : "rgba(255, 255, 255, 0.82)")
-                    : "rgba(245, 245, 245, 0.45)",
-                },
-              }}
-            />
-          : <CheckCircleOutlineIcon
-              sx={{
-                position: "absolute",
-                top: 6,
-                right: 6,
-                fontSize: 18,
+              },
+            }}
+          />
+        ) : (
+          <CheckCircleOutlineIcon
+            onClick={(e) => { e.stopPropagation(); if (onToggle) onToggle(account.id, true); }}
+            sx={{
+              position: "absolute",
+              top: 6,
+              right: 6,
+              fontSize: 18,
+              color: isEnabled
+                ? (checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.65)")
+                : "rgba(245, 245, 245, 0.45)",
+              zIndex: 2,
+              cursor: "pointer",
+              opacity: hovered ? 1 : 0,
+              transform: hovered ? "scale(1)" : "scale(0.85)",
+              pointerEvents: "auto",
+              transition: "opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease",
+              "&:hover": {
+                transform: "scale(1.12)",
                 color: isEnabled
-                  ? (checked ? "#F5F5F5" : "rgba(245, 245, 245, 0.65)")
+                  ? (checked ? "#FFFFFF" : "rgba(255, 255, 255, 0.82)")
                   : "rgba(245, 245, 245, 0.45)",
-                zIndex: 2,
-                cursor: "default",
-                opacity: hovered ? 1 : 0,
-                transform: hovered ? "scale(1)" : "scale(0.85)",
-                pointerEvents: "none",
-                transition: "opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms ease",
-                "&:hover": {
-                  transform: "scale(1.12)",
-                  color: isEnabled
-                    ? (checked ? "#FFFFFF" : "rgba(255, 255, 255, 0.82)")
-                    : "rgba(245, 245, 245, 0.45)",
-                },
-              }}
-            />
-        }
+              },
+            }}
+          />
+        )}
       </>
 
       {/* Background Icon with configurable position */}
@@ -190,11 +194,11 @@ function AccountCard({ account, owners, accountTypes, isEnabled = true }) {
         sx={{
           display: "flex",
           flexDirection: "column",
-          pt: "10px",
-          pl: "10px",
+          pt: "8px",
+          pl: "8px",
           "&:last-child": {
-            pb: "14px",
-          },
+              pb: "8px",
+            },
           position: "relative",
           zIndex: 1,
         }}

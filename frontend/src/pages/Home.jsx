@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EntriesContainer from "../components/EntriesContainer";
-import Statistics from "../components/Statistics";
 
 import {
   AppBar,
   Toolbar,
   Typography,
   IconButton,
-  TextField,
   Box,
   CssBaseline,
   CircularProgress,
@@ -37,6 +35,56 @@ function Home() {
   const [entries, setEntries] = useState([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
   const [entriesError, setEntriesError] = useState(null);
+  const [entriesDateType, setEntriesDateType] = useState('month');
+  const [entriesDate, setEntriesDate] = useState(new Date());
+  const [accountEnabled, setAccountEnabled] = useState({});
+
+  // Wrap owners/account types setters so chips also enable/disable matching accounts
+  const handleSetOwnersState = (updater) => {
+    setOwnersState((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      // find owner ids that changed
+      const changed = Object.keys(next).filter(k => prev[k] !== next[k]);
+      if (changed.length > 0 && pivot && pivot.length > 0) {
+        setAccountEnabled((aePrev) => {
+          const nextAe = { ...aePrev };
+          for (const ownerId of changed) {
+            const on = Boolean(next[ownerId]);
+            pivot.forEach((acc) => {
+              if (String(acc.owner_id) === String(ownerId)) {
+                nextAe[String(acc.id)] = on;
+              }
+            });
+          }
+          return nextAe;
+        });
+      }
+      return next;
+    });
+  };
+
+  const handleSetAccountTypesState = (updater) => {
+    setAccountTypesState((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      const changed = Object.keys(next).filter(k => prev[k] !== next[k]);
+      if (changed.length > 0 && pivot && pivot.length > 0) {
+        setAccountEnabled((aePrev) => {
+          const nextAe = { ...aePrev };
+          for (const typeKey of changed) {
+            const on = Boolean(next[typeKey]);
+            pivot.forEach((acc) => {
+              const accTypeKey = acc.type?.key || acc.type || '';
+              if (String(accTypeKey) === String(typeKey)) {
+                nextAe[String(acc.id)] = on;
+              }
+            });
+          }
+          return nextAe;
+        });
+      }
+      return next;
+    });
+  };
 
   const handleLogout = async () => {
     await fetch("/api/logout", {
@@ -67,6 +115,14 @@ function Home() {
 
       const data = await res.json();
       setPivot(data);
+      // initialize accountEnabled map to true for each account
+      try {
+        const map = {};
+        (data || []).forEach((acc) => { map[String(acc.id)] = true; });
+        setAccountEnabled(map);
+      } catch (e) {
+        // ignore
+      }
     } catch (e) {
       setError(e.message || "Failed to load data");
     }
@@ -131,7 +187,8 @@ function Home() {
         const ownerSelected = Boolean(ownersState[String(acc.owner_id)]);
         const accountTypeKey = acc.type?.key || acc.type || "";
         const typeSelected = Boolean(accountTypesState[String(accountTypeKey)]);
-        return ownerSelected && typeSelected;
+        const accountOn = accountEnabled[String(acc.id)] ?? true;
+        return ownerSelected && typeSelected && accountOn;
       })
       .map((acc) => acc.id);
 
@@ -147,6 +204,37 @@ function Home() {
         return;
       }
 
+      // compute date range from entriesDateType/entriesDate
+      const dateRangeForSelection = (type, d) => {
+        const date = new Date(d);
+        const toIso = (dt) => dt.toISOString().split('T')[0];
+        if (type === 'day') {
+          return { from: toIso(date), to: toIso(date) };
+        }
+        if (type === 'week') {
+          // start on Monday
+          const day = date.getDay();
+          const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+          const start = new Date(date.setDate(diff));
+          const end = new Date(start);
+          end.setDate(start.getDate() + 6);
+          return { from: toIso(start), to: toIso(end) };
+        }
+        if (type === 'month') {
+          const start = new Date(date.getFullYear(), date.getMonth(), 1);
+          const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+          return { from: toIso(start), to: toIso(end) };
+        }
+        if (type === 'year') {
+          const start = new Date(date.getFullYear(), 0, 1);
+          const end = new Date(date.getFullYear(), 11, 31);
+          return { from: toIso(start), to: toIso(end) };
+        }
+        return { from: '', to: '' };
+      };
+
+      const { from, to } = dateRangeForSelection(entriesDateType, entriesDate);
+
       const res = await fetch("/api/entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -154,7 +242,7 @@ function Home() {
           owners: selectedOwners,
           account_ids: selectedAccountIds,
           movement_types: ["expense"],
-          date: { from: "", to: dateTo },
+          date: { from: from || "", to: to || "" },
           page: 1,
           per_page: 100
         })
@@ -209,15 +297,14 @@ function Home() {
     }
 
     fetchEntries();
-  }, [pivot, ownersState, accountTypesState, dateTo]);
+  }, [pivot, ownersState, accountTypesState, entriesDateType, entriesDate, accountEnabled]);
 
   const [leftOpen, setLeftOpen] = useState(true);
   const [middleOpen, setMiddleOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(true);
 
   const collapsedWidth = "fit-content"; // collapsed width should fit header text
-  const thirdPercent = "33.333%";
-  const rightPercent = "30%";
+  const leftPercent = "40%";
+  const middlePercent = "60%";
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -235,66 +322,7 @@ function Home() {
             Accouting
           </Typography>
 
-          <Box
-            sx={{
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <TextField
-              type="date"
-              size="small"
-              label="Accounts balance at"
-              value={dateTo}
-              onChange={(event) => {
-                setDateTo(event.target.value);
-              }}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={{
-                minWidth: 170,
-                "& .MuiInputBase-root": {
-                  color: "common.white",
-                  fontSize: "0.85rem",
-                  height: 36
-                },
-                "& .MuiInputLabel-root": {
-                  color: "rgba(255,255,255,0.8)",
-                  fontSize: "0.82rem"
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "rgba(255,255,255,0.5)"
-                },
-                "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "rgba(255,255,255,0.9)"
-                },
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "common.white"
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: "common.white"
-                },
-                "& .MuiSvgIcon-root": {
-                  color: "common.white"
-                },
-                "& input::-webkit-calendar-picker-indicator": {
-                  filter: "invert(1)"
-                },
-                "& input::-webkit-clear-button": {
-                  display: "none"
-                },
-                "& input::-ms-clear": {
-                  display: "none"
-                },
-                "& input::-ms-reveal": {
-                  display: "none"
-                }
-              }}
-            />
-          </Box>
+          {/* Accounts balance selector removed — account cards show balance at current date */}
 
           <Box sx={{ ml: "auto", display: "flex", alignItems: "center" }}>
             <IconButton
@@ -327,12 +355,12 @@ function Home() {
             <Box sx={{ display: "flex", gap: 2, width: "100%", boxSizing: "border-box", overflowX: "hidden" }}>
               {/* Left column - Account cards */}
               <Box sx={{
-                width: leftOpen ? thirdPercent : collapsedWidth,
+                width: leftOpen ? leftPercent : collapsedWidth,
                 transition: "width 240ms ease",
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
-                flex: leftOpen ? `0 0 ${thirdPercent}` : '0 0 auto',
+                flex: leftOpen ? `0 0 ${leftPercent}` : '0 0 auto',
                 minWidth: leftOpen ? undefined : 120,
                 maxWidth: leftOpen ? undefined : 360,
                 boxSizing: "border-box"
@@ -344,8 +372,10 @@ function Home() {
                     account_types={accountTypes}
                     ownersState={ownersState}
                     accountTypesState={accountTypesState}
-                    setOwnersState={setOwnersState}
-                    setAccountTypesState={setAccountTypesState}
+                    setOwnersState={handleSetOwnersState}
+                    setAccountTypesState={handleSetAccountTypesState}
+                    accountEnabled={accountEnabled}
+                    setAccountEnabled={setAccountEnabled}
                     expanded={leftOpen}
                     onToggle={(val) => setLeftOpen(Boolean(val))}
                   />
@@ -354,12 +384,12 @@ function Home() {
 
               {/* Middle column - Entries */}
               <Box sx={{
-                width: middleOpen ? thirdPercent : collapsedWidth,
+                width: middleOpen ? (leftOpen ? middlePercent : 'auto') : collapsedWidth,
                 transition: "width 240ms ease",
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
-                flex: middleOpen ? `0 0 ${thirdPercent}` : '0 0 auto',
+                flex: middleOpen ? (leftOpen ? `0 0 ${middlePercent}` : '1 1 auto') : '0 0 auto',
                 minWidth: middleOpen ? undefined : 120,
                 maxWidth: middleOpen ? undefined : 360,
                 boxSizing: "border-box"
@@ -371,29 +401,15 @@ function Home() {
                     error={entriesError}
                     expanded={middleOpen}
                     onToggle={(val) => setMiddleOpen(Boolean(val))}
+                    onDateChange={(payload) => {
+                      if (payload?.dateType) setEntriesDateType(payload.dateType);
+                      if (payload?.date) setEntriesDate(payload.date);
+                    }}
                   />
                 </Box>
               </Box>
 
-              {/* Right column - Statistics */}
-              <Box sx={{
-                width: rightOpen ? rightPercent : collapsedWidth,
-                transition: "width 240ms ease",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                flex: rightOpen ? `0 0 ${rightPercent}` : '0 0 auto',
-                minWidth: rightOpen ? undefined : 120,
-                maxWidth: rightOpen ? undefined : 360,
-                boxSizing: "border-box"
-              }}>
-                <Box sx={{ flex: 1, overflow: "auto", px: rightOpen ? 1 : 0}}>
-                  <Statistics
-                    expanded={rightOpen}
-                    onToggle={(val) => setRightOpen(Boolean(val))}
-                  />
-                </Box>
-              </Box>
+              {/* Right column removed: statistics component deleted per request */}
             </Box>
           )}
         </Box>

@@ -28,5 +28,12 @@ npm run dev -- --host 0.0.0.0 --port 5173
 # TODO
 
 ## Backend
+- 06/06/25
+    - Make add single entry and import entries on header of entries component. Open a dialog
+    - Edit entry dialog with also cancel entry button
+    - Maybe move accounts balance at on header of accounts container as an additional features
+    - Unify Entries and Statistics card so that it is clear that statistics refere to current date selected on entries
+        - Keep separation of entry list and statistics, where graphs will be shown   
+    - Scollable entries container with max enties/page, define better container for single entries  
 - working on import scripts
     - errors on add entries, improve error prompting for logging and to easily recognize error 

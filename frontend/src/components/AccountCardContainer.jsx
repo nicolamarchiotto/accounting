@@ -25,8 +25,11 @@ function AccountCardContainer({
   ownersState = {},
   accountTypesState = {},
   setOwnersState = () => {},
-  setAccountTypesState = () => {}
-  , expanded, onToggle
+  setAccountTypesState = () => {},
+  accountEnabled = {},
+  setAccountEnabled = () => {},
+  expanded,
+  onToggle
 }) {
   const [internalExpanded, setInternalExpanded] = useState(true);
   const isExpanded = expanded !== undefined ? expanded : internalExpanded;
@@ -124,7 +127,11 @@ function AccountCardContainer({
                               isEnabled={
                                 (ownersState[String(account.owner_id)] ?? true)
                                 && (accountTypesState[String(account.type?.key || account.type || "")] ?? true)
+                                && (accountEnabled[String(account.id)] ?? true)
                               }
+                              onToggle={(id, enabled) => {
+                                setAccountEnabled((prev) => ({ ...prev, [String(id)]: Boolean(enabled) }));
+                              }}
                             />
                           </Grid>
                         ))}
