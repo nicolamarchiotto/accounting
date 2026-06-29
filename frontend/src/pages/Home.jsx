@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import EntriesContainer from "../components/EntriesContainer";
+import EntriesContainer from "../components/entries/EntriesContainer";
 
 import {
   AppBar,
@@ -16,7 +16,7 @@ import {
 import LogoutIcon from "@mui/icons-material/Logout";
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import AccountCardContainer from "../components/AccountCardContainer";
+import AccountCardContainer from "../components/account/AccountCardContainer";
 
 function getTodayIsoDate() {
   return new Date().toISOString().split("T")[0];

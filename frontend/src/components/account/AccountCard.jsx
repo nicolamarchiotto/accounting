@@ -13,8 +13,8 @@ import ContactPageIcon from '@mui/icons-material/ContactPage';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import InfoIcon from '@mui/icons-material/InfoOutlined';
-import Currency from "./Currency";
-import EditAccountDialog from "./EditAccountDialog";
+import Currency from "../Currency";
+import AccountEditDialog from "./AccountEditDialog";
 
 function AccountCard({ account, owners, accountTypes, isEnabled = true, onToggle }) {
 
@@ -93,7 +93,7 @@ function AccountCard({ account, owners, accountTypes, isEnabled = true, onToggle
         cursor: "default",
       }}
     >
-      <EditAccountDialog
+      <AccountEditDialog
         open={open}
         onClose={handleClose}
         account={currentAccount}

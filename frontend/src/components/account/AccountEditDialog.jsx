@@ -58,7 +58,7 @@ function isValidHexColor(value) {
   return /^#[0-9A-Fa-f]{6}$/.test(value);
 }
 
-function EditAccountDialog({
+function AccountEditDialog({
   open,
   onClose,
   account,
@@ -421,4 +421,4 @@ function EditAccountDialog({
   );
 }
 
-export default EditAccountDialog;
+export default AccountEditDialog;
