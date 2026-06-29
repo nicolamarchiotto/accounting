@@ -7,6 +7,7 @@ from extensions import db
 
 categories_bp = Blueprint("categories", __name__)
 
+@categories_bp.route("/api/categories", methods=["GET", "POST"])
 @categories_bp.route("/categories", methods=["GET", "POST"])
 @login_required
 def get_categories():

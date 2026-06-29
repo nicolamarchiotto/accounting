@@ -4,6 +4,7 @@ import AddIcon from '@mui/icons-material/Add';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EntryDialog from "./EntryDialog";
 
 function addDate(date, type, delta) {
   const d = new Date(date);
@@ -67,10 +68,11 @@ const getButtonSx = (theme) => ({
   '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' }
 });
 
-function EntriesChips({ onChange } = {}) {
+function EntriesChips({ onChange, onAddSuccess } = {}) {
   const [dateType, setDateType] = useState('month');
   const [date, setDate] = useState(new Date());
   const [anchorEl, setAnchorEl] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const openMenu = (ev) => setAnchorEl(ev.currentTarget);
   const closeMenu = () => setAnchorEl(null);
@@ -97,10 +99,16 @@ function EntriesChips({ onChange } = {}) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
       <Tooltip title="Add entry">
-        <IconButton size="small" onClick={() => {}} sx={getButtonSx()}>
+        <IconButton size="small" onClick={() => setDialogOpen(true)} sx={getButtonSx()}>
           <AddIcon fontSize="small" />
         </IconButton>
       </Tooltip>
+
+      <EntryDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onAdded={onAddSuccess}
+      />
 
       <Tooltip title="Import file">
         <IconButton size="small" onClick={() => {}} sx={getButtonSx()}>

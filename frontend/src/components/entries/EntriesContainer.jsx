@@ -2,6 +2,7 @@ import { Box, CircularProgress, Alert, Typography, Collapse, IconButton } from "
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useState } from "react";
 import EntriesChips from "./EntriesChips";
+import EntryDialog from "./EntryDialog";
 
 // Helper to safely extract a display name from possibly nested objects
 const getName = (val) => {
@@ -11,10 +12,12 @@ const getName = (val) => {
   return String(val);
 };
 
-function EntriesContainer({ entries = [], loading = false, error = null, expanded, onToggle, onDateChange }) {
+function EntriesContainer({ entries = [], loading = false, error = null, expanded, onToggle, onDateChange, onAddSuccess }) {
   const [internalExpanded, setInternalExpanded] = useState(true);
   const [dateType, setDateType] = useState('month');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const isExpanded = expanded !== undefined ? expanded : internalExpanded;
 
   const handleChange = (_event, expandedVal) => {
@@ -32,6 +35,16 @@ function EntriesContainer({ entries = [], loading = false, error = null, expande
     if (typeof window !== 'undefined') console.log('Import file clicked');
   };
 
+  const openEntryForEdit = (entry) => {
+    setSelectedEntry(entry);
+    setEditDialogOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    setEditDialogOpen(false);
+    setSelectedEntry(null);
+  };
+
   const handleDateChange = ({ dateType: dt, date }) => {
     if (dt) setDateType(dt);
     if (date) setSelectedDate(date);
@@ -43,7 +56,7 @@ function EntriesContainer({ entries = [], loading = false, error = null, expande
         <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: "0.02em", color: "common.white" }}>Entries</Typography>
         {isExpanded && (
           <Box onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()} onFocusCapture={(event) => event.stopPropagation()} sx={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center" }}>
-            <EntriesChips onChange={handleDateChange} />
+            <EntriesChips onChange={handleDateChange} onAddSuccess={onAddSuccess} />
           </Box>
         )}
         <Box sx={{ position: "absolute", right: 12 }}>
@@ -70,7 +83,7 @@ function EntriesContainer({ entries = [], loading = false, error = null, expande
                   </Typography>
                 ) : (
                   entries.map((entry) => (
-                    <Box key={entry.id} sx={{ padding: 2, borderRadius: 2, border: "1px solid rgba(15, 23, 42, 0.08)", backgroundColor: "#f8fafc", transition: "transform 0.15s ease, box-shadow 0.15s ease", '&:hover': { transform: "translateY(-1px)", boxShadow: "0 8px 24px rgba(15, 23, 42, 0.08)" } }}>
+                    <Box key={entry.id} onClick={() => openEntryForEdit(entry)} sx={{ padding: 2, borderRadius: 2, border: "1px solid rgba(15, 23, 42, 0.08)", backgroundColor: "#f8fafc", transition: "transform 0.15s ease, box-shadow 0.15s ease", cursor: "pointer", '&:hover': { transform: "translateY(-1px)", boxShadow: "0 8px 24px rgba(15, 23, 42, 0.08)" } }}>
                       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 1 }}>
                         <Box sx={{ minWidth: 0 }}>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "rgba(15, 23, 42, 0.95)", mb: 0.5 }}>{getName(entry.category) || "Expense"}</Typography>
@@ -93,6 +106,13 @@ function EntriesContainer({ entries = [], loading = false, error = null, expande
           )}
         </Box>
       </Collapse>
+      <EntryDialog
+        open={editDialogOpen}
+        onClose={closeEditDialog}
+        entry={selectedEntry}
+        onSaved={onAddSuccess}
+        onDeleted={onAddSuccess}
+      />
   </Box>
   );
 }

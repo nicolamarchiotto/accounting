@@ -405,6 +405,7 @@ function Home() {
                       if (payload?.dateType) setEntriesDateType(payload.dateType);
                       if (payload?.date) setEntriesDate(payload.date);
                     }}
+                    onAddSuccess={fetchEntries}
                   />
                 </Box>
               </Box>

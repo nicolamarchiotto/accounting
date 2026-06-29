@@ -13,6 +13,7 @@ from typing import Dict, Tuple, Any
 entries_bp = Blueprint("entries", __name__)
 
 # POST /entries
+@entries_bp.route("/api/entries/add", methods=["POST"])
 @entries_bp.route("/entries/add", methods=["POST"])
 @login_required
 def add_entry():
@@ -91,6 +92,7 @@ def add_entry():
     db.session.commit()
     return jsonify({"status": "ok", "id": entry.id})
 
+@entries_bp.route("/api/entries/remove/<int:entry_id>", methods=["DELETE"])
 @entries_bp.route("/entries/remove/<int:entry_id>", methods=["DELETE"])
 @login_required
 def remove_entry(entry_id):
@@ -118,6 +120,7 @@ def remove_all_entries():
         }), 500
 
     return jsonify({"success": True})
+@entries_bp.route("/api/entries/edit/<int:entry_id>", methods=["PUT"])
 @entries_bp.route("/entries/edit/<int:entry_id>", methods=["PUT"])
 @login_required
 def edit_entry(entry_id):
@@ -140,8 +143,25 @@ def edit_entry(entry_id):
     destination_account_id = data.get("destination_account_id")
     movement_type = list(MovementType)[movement_type_index]
 
-    if not all([amount, movement_type, date, category_id]):
+    if not all([amount, movement_type, date]):
         return jsonify({"error": "Missing required fields"}), 400
+
+    if category_id in ["", None]:
+        category_id = None
+    if sub_category_id in ["", None]:
+        sub_category_id = None
+
+    if category_id is not None:
+        category = Category.query.get(category_id)
+        if not category:
+            if movement_type != MovementType.transfer:
+                return jsonify({"error": "Invalid category"}), 400
+            category_id = None
+
+    if sub_category_id is not None:
+        subcategory = SubCategory.query.get(sub_category_id)
+        if not subcategory:
+            return jsonify({"error": "Invalid subcategory"}), 400
 
     try:
         entry.movement_type = movement_type
@@ -390,6 +410,7 @@ def aggregate_entries():
         "total_amount": float(total_amount)
     })
 
+@entries_bp.route("/api/movement_types", methods=["GET"])
 @entries_bp.route("/movement_types", methods=["GET"])
 @login_required
 def get_movement_types():
