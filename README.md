@@ -29,7 +29,6 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 ## Backend
 - 06/06/25
-    - Better UI for EntryDialog
     - Import entries functionality
     - Maybe move accounts balance at on header of accounts container as an additional features
     - Unify Entries and Statistics card so that it is clear that statistics refere to current date selected on entries

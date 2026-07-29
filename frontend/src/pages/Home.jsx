@@ -241,7 +241,7 @@ function Home() {
         body: JSON.stringify({
           owners: selectedOwners,
           account_ids: selectedAccountIds,
-          movement_types: ["expense"],
+          movement_types: [],
           date: { from: from || "", to: to || "" },
           page: 1,
           per_page: 100
@@ -255,7 +255,6 @@ function Home() {
 
       const data = await res.json();
 
-      console.log("Fetched entries:", data);
       setEntries(data.items || []);
     } catch (e) {
       setEntriesError(e.message || "Failed to load entries");
@@ -405,7 +404,11 @@ function Home() {
                       if (payload?.dateType) setEntriesDateType(payload.dateType);
                       if (payload?.date) setEntriesDate(payload.date);
                     }}
-                    onAddSuccess={fetchEntries}
+                    onAddSuccess={() => {
+                      // Refresh the entries list and pivot (account) data so account cards update
+                      fetchEntries();
+                      fetchPivot(dateTo);
+                    }}
                   />
                 </Box>
               </Box>

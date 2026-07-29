@@ -50,6 +50,7 @@ function EntriesContainer({ entries = [], loading = false, error = null, expande
     if (date) setSelectedDate(date);
     if (onDateChange) onDateChange({ dateType: dt || dateType, date: date || selectedDate });
   };
+
   return (
     <Box sx={{ width: isExpanded ? "100%" : "auto", borderRadius: 3, border: "1px solid rgba(15, 23, 42, 0.10)", backgroundColor: "transparent", boxShadow: "none", overflow: "hidden" }}>
       <Box sx={{ px: 2, pr: 6, minHeight: 42, bgcolor: "primary.main", color: "common.white", display: "flex", alignItems: "center", justifyContent: "flex-start", position: "relative", borderTopRightRadius: isExpanded ? 3 : 0 }}>
@@ -86,15 +87,29 @@ function EntriesContainer({ entries = [], loading = false, error = null, expande
                     <Box key={entry.id} onClick={() => openEntryForEdit(entry)} sx={{ padding: 2, borderRadius: 2, border: "1px solid rgba(15, 23, 42, 0.08)", backgroundColor: "#f8fafc", transition: "transform 0.15s ease, box-shadow 0.15s ease", cursor: "pointer", '&:hover': { transform: "translateY(-1px)", boxShadow: "0 8px 24px rgba(15, 23, 42, 0.08)" } }}>
                       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 1 }}>
                         <Box sx={{ minWidth: 0 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "rgba(15, 23, 42, 0.95)", mb: 0.5 }}>{getName(entry.category) || "Expense"}</Typography>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "rgba(15, 23, 42, 0.95)", mb: 0.5 }}>{getName(entry.category) || getName(entry.movement_type)}</Typography>
                           <Typography variant="body2" sx={{ color: "rgba(15, 23, 42, 0.75)", mb: 0.5, whiteSpace: "pre-wrap" }}>{entry.description || "No description"}</Typography>
                           <Typography variant="caption" sx={{ color: "rgba(15, 23, 42, 0.55)" }}>
                             {getName(entry.account)}{entry.destination_account ? ` → ${getName(entry.destination_account)}` : ""}{entry.subcategory ? ` · ${getName(entry.subcategory)}` : ""}
                           </Typography>
                         </Box>
-                        <Typography variant="subtitle2" sx={{ color: "rgba(211, 47, 47, 0.95)", fontWeight: 700, whiteSpace: "nowrap" }}>-{Number(entry.amount).toFixed(2)}</Typography>
+                        {
+                          entry?.movement_type == "Income" && (
+                            <Typography variant="subtitle2" sx={{ color: "success.main", fontWeight: 700, whiteSpace: "nowrap" }}>+{Number(entry.amount).toFixed(2)}</Typography>
+                          )
+                        }
+                        {
+                          entry?.movement_type == "Transfer" && (
+                            <Typography variant="subtitle2" sx={{ color: "info.main", fontWeight: 700, whiteSpace: "nowrap" }}>{Number(entry.amount).toFixed(2)}</Typography>
+                          )
+                        }
+                        {
+                          entry?.movement_type == "Expense" && (
+                            <Typography variant="subtitle2" sx={{ color: "error.main", fontWeight: 700, whiteSpace: "nowrap" }}>-{Number(entry.amount).toFixed(2)}</Typography>
+                          )
+                        }
                       </Box>
-                      <Typography variant="caption" sx={{ display: "block", mt: 1, color: "rgba(15, 23, 42, 0.55)" }}>{new Date(entry.date).toLocaleDateString()}</Typography>
+
                     </Box>
                   ))
                 )}

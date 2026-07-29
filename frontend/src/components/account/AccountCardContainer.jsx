@@ -110,7 +110,7 @@ function AccountCardContainer({
 
                     {/* Accounts list */}
                     {accounts.length > 0 ? (
-                      <Grid container spacing={1.5} rowSpacing={1.5} sx={{ justifyContent: "left" }}>
+                      <Grid container spacing={1.5} rowSpacing={1.5} sx={{ justifyContent: "flex-start" }}>
                         {accounts.map(account => (
                           <Grid
                             key={account.id}

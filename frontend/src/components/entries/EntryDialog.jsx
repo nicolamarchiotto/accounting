@@ -193,7 +193,7 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
       return;
     }
 
-    const isTransfer = movementTypes[formValues.movement_type_index] === "transfer";
+    const isTransfer = movementTypes[formValues.movement_type_index] === "Transfer";
     if (isTransfer && !formValues.destination_account_id) {
       setError("Destination account is required for transfers.");
       return;
@@ -201,13 +201,13 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
 
     const payload = {
       account_id: Number(formValues.account_id),
+      destination_account_id: isTransfer ? Number(formValues.destination_account_id) : null,
       amount: String(formValues.amount),
       movement_type_index: Number(formValues.movement_type_index),
       category_id: formValues.category_id ? Number(formValues.category_id) : null,
       sub_category_id: formValues.sub_category_id ? Number(formValues.sub_category_id) : null,
       description: formValues.description,
-      date: normalizeDate(formValues.date),
-      destination_account_id: isTransfer ? Number(formValues.destination_account_id) : null
+      date: normalizeDate(formValues.date)
     };
 
     const url = isEditing ? `/api/entries/edit/${entry.id}` : "/api/entries/add";
@@ -292,7 +292,7 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
             ) : null}
 
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: isTransfer ? 4 : 6 }}>
                 <TextField
                   fullWidth
                   select
@@ -308,7 +308,7 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: isTransfer ? 4 : 6 }}>
                 <TextField
                   fullWidth
                   select
@@ -324,55 +324,16 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
                 </TextField>
               </Grid>
 
-              {!isTransfer ? (
-                <>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Category"
-                      value={formValues.category_id}
-                      onChange={handleFieldChange("category_id")}
-                    >
-                      <MenuItem value="">None</MenuItem>
-                      {categories.map((category) => (
-                        <MenuItem key={category.id} value={category.id}>
-                          {category.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Subcategory"
-                      value={formValues.sub_category_id}
-                      onChange={handleFieldChange("sub_category_id")}
-                      disabled={!subcategories.length}
-                    >
-                      <MenuItem value="">None</MenuItem>
-                      {subcategories.map((subcategory) => (
-                        <MenuItem key={subcategory.id} value={subcategory.id}>
-                          {subcategory.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                </>
-              ) : null}
-
               {isTransfer ? (
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <TextField
                     fullWidth
                     select
-                    label="Destination account"
+                    label="Target account"
                     value={formValues.destination_account_id}
                     onChange={handleFieldChange("destination_account_id")}
                   >
-                    <MenuItem value="">Select destination account</MenuItem>
+                    <MenuItem value="">Select target account</MenuItem>
                     {destinationAccounts.map((account) => (
                       <MenuItem key={account.id} value={account.id}>
                         {account.name}
@@ -380,9 +341,50 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
                     ))}
                   </TextField>
                 </Grid>
-              ) : null}
+                ) : 
+                null
+              }
+              
+              {!isTransfer &&
+              <>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Category"
+                    value={formValues.category_id}
+                    onChange={handleFieldChange("category_id")}
+                    >
+                    <MenuItem value="">None</MenuItem>
+                    {categories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        {category.name}
+                      </MenuItem>
+                    ))}
+                    </TextField>
+                </Grid>
 
-              <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Subcategory"
+                    value={formValues.sub_category_id}
+                    onChange={handleFieldChange("sub_category_id")}
+                    disabled={!subcategories.length}
+                    >
+                    <MenuItem value="">None</MenuItem>
+                    {subcategories.map((subcategory) => (
+                      <MenuItem key={subcategory.id} value={subcategory.id}>
+                        {subcategory.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </>
+            }
+
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Amount"
@@ -392,7 +394,7 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   type="date"
@@ -403,7 +405,7 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Description"
@@ -414,12 +416,6 @@ function EntryDialog({ open, onClose, onAdded, entry, onSaved, onDeleted } = {})
                 />
               </Grid>
             </Grid>
-
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="caption" color="textSecondary">
-                {isEditing ? `This entry will be updated using /api/entries/edit/${entry.id}.` : "The entry will be posted using the backend endpoint at /api/entries/add."}
-              </Typography>
-            </Box>
           </Box>
         )}
       </DialogContent>
