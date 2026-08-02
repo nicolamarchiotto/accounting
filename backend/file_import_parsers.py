@@ -3,6 +3,30 @@ from models import Account, MovementType, Category, SubCategory
 from extensions import db
 import pandas as pd
 
+def _normalize_lookup_value(value):
+    return str(value).strip().casefold()
+
+def resolve_category_ids(category_name):
+    normalized_name = _normalize_lookup_value(category_name)
+
+    for subcategory in SubCategory.query.all():
+        if _normalize_lookup_value(subcategory.name) == normalized_name:
+            return subcategory.category_id, subcategory.id
+
+        compatible_names = subcategory.compatible_names or []
+        if any(_normalize_lookup_value(name) == normalized_name for name in compatible_names):
+            return subcategory.category_id, subcategory.id
+
+    for category in Category.query.all():
+        if _normalize_lookup_value(category.name) == normalized_name:
+            return category.id, None
+
+        compatible_names = category.compatible_names or []
+        if any(_normalize_lookup_value(name) == normalized_name for name in compatible_names):
+            return category.id, None
+
+    return None, None
+
 class BaseParser:
 
     REQUIRED_COLUMNS = set()
@@ -128,17 +152,7 @@ class WalletExportParser(BaseParser):
             else:
                 account = Account.query.filter_by(name=account_name).first()
                 account_id = account.id if account else None 
-                category_id = None
-                subcategory_id = None
-
-                subcategory = SubCategory.query.filter_by(name=category_name).first()
-                if subcategory:
-                    category_id = subcategory.category_id
-                    subcategory_id = subcategory.id
-                else:
-                    category = Category.query.filter_by(name=category_name).first()
-                    if category:
-                        category_id = category.id
+                category_id, subcategory_id = resolve_category_ids(category_name)
 
                 obj = {
                     "account_id": account_id,

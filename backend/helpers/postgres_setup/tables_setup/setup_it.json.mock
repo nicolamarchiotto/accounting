@@ -6,36 +6,40 @@
     },
     "categories": [
         {
-            "name": "Cibo & Bevande",
+            "name": "Cibo e bevande",
+            "compatible_names": ["Cibo & Bevande"],
             "sub_categories": [
-                { "name": "Bar & Locali" },
-                { "name": "Ristoranti & Fast Food" },
+                { "compatible_names": ["Bar & Locali"], "name": "Bar, caffè" },
+                { "compatible_names": ["Ristoranti & Fast Food"], "name": "Ristorante, fast-food" },
                 { "name": "Spesa" }
             ]
         },
         {
             "name": "Shopping",
+            "compatible_names": [],
             "sub_categories": [
-                { "name": "Abbigliamento & Scarpe" },
-                { "name": "Animali domestici" },
-                { "name": "Bellezza & Benessere" },
-                { "name": "Cancelleria & Utensili" },
-                { "name": "Casa & Giardino" },
-                { "name": "Elettronica" },
-                { "name": "Farmacia" },
-                { "name": "Figli" },
-                { "name": "Gioelli & Accessori" },
-                { "name": "Regali" },
+                { "compatible_names": ["Abbigliamento & Scarpe"], "name": "Abbigliamento e scarpe" },
+                { "compatible_names": ["Animali domestici"], "name": "Animali domestici, animali" },
+                { "compatible_names": ["Salute e bellezza"], "name": "Salute e bellezza" },
+                { "compatible_names": ["Cancelleria & Utensili"], "name": "Cancelleria, attrezzi" },
+                { "compatible_names": ["Casa & Giardino"], "name": "Casa, giardino" },
+                { "compatible_names": ["Elettronica"], "name": "Elettronica, accessori" },
+                { "compatible_names": ["Farmacia"], "name": "Drogheria, farmacia" },
+                { "compatible_names": ["Figli"], "name": "Bambini" },
+                { "compatible_names": ["Gioelli & Accessori"], "name": "Gioielli, accessori" },
+                { "compatible_names": ["Hobby & Sport"], "name": "Hobby, sport" },
+                { "compatible_names": ["Regali"], "name": "Regali, piaceri" },
                 { "name": "Tempo libero" }
             ]
         },
         {
-            "name": "Casa",
+            "name": "Abitazione",
+            "compatible_names": ["Casa"],
             "sub_categories": [
                 { "name": "Affitto" },
-                { "name": "Assicurazione immobili" },
-                { "name": "Energia & Utenze" },
-                { "name": "Manutenzione" },
+                { "compatible_names": ["Assicurazione immobili"], "name": "Assicurazione sulla proprietà"},
+                { "compatible_names": ["Energia & Utenze"], "name": "Energia, utenze"},
+                { "compatible_names": ["Manutenzione"], "name": "Manutenzione, riparazioni"},
                 { "name": "Mutuo" },
                 { "name": "Servizi" }
             ]
@@ -45,12 +49,13 @@
             "sub_categories": [
                 { "name": "Taxi" },
                 { "name": "Trasporto pubblico" },
-                { "name": "Viaggi" },
+                { "compatible_names": ["Viaggi"], "name": "Lunga distanza" },
                 { "name": "Viaggi di lavoro" }
             ]
         },
         {
             "name": "Veicoli",
+            "compatible_names": ["Veicolo"],
             "sub_categories": [
                 { "name": "Assicurazione veicoli" },
                 { "name": "Carburante" },
@@ -61,21 +66,22 @@
             ]
         },
         {
-            "name": "Intrattenimento",
+            "name": "Vita e intrattenimento",
+            "compatible_names": ["Intrattenimento"],
             "sub_categories": [
-                { "name": "Alcolici & Tabacco" },
-                { "name": "Bellezza & Benessere" },
-                { "name": "Cultura & Eventi sportivi" },
-                { "name": "Donazioni, Carità" },
-                { "name": "Eventi" },
-                { "name": "Formazione & Sviluppo" },
+                { "compatible_names": ["Alcolici & Tabacco"], "name": "Alcolici, tabacco" },
+                { "compatible_names": ["Bellezza & Benessere"], "name": "Benessere, bellezza" },
+                { "compatible_names": ["Cultura & Eventi sportivi"], "name": "Cultura, eventi sportivi" },
+                { "compatible_names": ["Donazioni, Carità"], "name": "Beneficenza, regali" },
+                { "compatible_names": ["Eventi"], "name": "Eventi della vita" },
+                { "compatible_names": ["Formazione & Sviluppo"], "name": "Istruzione, sviluppo personale" },
                 { "name": "Hobby" },
-                { "name": "Libri & Abbonamenti" },
-                { "name": "Lotterie & Gioco d'azzardo" },
-                { "name": "Salute" },
-                { "name": "Sport & Fitness" },
-                { "name": "TV & Streaming" },
-                { "name": "Vacanze & Alberghi" }
+                { "compatible_names": ["Libri & Abbonamenti"], "name": "Libri, audio, abbonamenti" },
+                { "compatible_names": ["Lotterie & Gioco d'azzardo"], "name": "Lotterie, gioco d'azzardo" },
+                { "compatible_names": ["Salute"], "name": "Assistenza sanitaria, medico" },
+                { "compatible_names": ["Sport & Fitness"], "name": "Sport attivo, fitness" },
+                { "compatible_names": ["TV & Streaming"], "name": "TV, streaming" },
+                { "compatible_names": ["Vacanze & Alberghi"], "name": "Vacanze, viaggi, hotel" }
             ]
         },
         {
@@ -83,50 +89,51 @@
             "sub_categories": [
                 { "name": "Internet" },
                 { "name": "Servizi postali" },
-                { "name": "Software, App & Giochi" },
-                { "name": "Telefono" }
+                { "compatible_names": ["Software, App & Giochi"], "name": "Software, app, giochi" },
+                { "compatible_names": ["Telefono"], "name": "Telefono, cellulare" }
             ]
         },
         {
             "name": "Spese finanziarie",
             "sub_categories": [
-                { "name": "Assegno familiare" },
+                { "compatible_names": ["Assegno familiare"], "name": "Mantenimento figli" },
                 { "name": "Assicurazioni" },
                 { "name": "Consulenza" },
                 { "name": "Multe" },
-                { "name": "Prestiti & Interessi" },
-                { "name": "Tariffe, tasse" },
-                { "name": "Tasse" }
+                { "compatible_names": ["Prestiti & Interessi"], "name": "Prestiti, interessi" },
+                { "name": "Costi, commissioni" },
+                { "compatible_names": ["Tariffe, tasse"],"name": "Tasse" }
             ]
         },
         {
             "name": "Investimenti",
             "sub_categories": [
-                { "name": "Beni immobili" },
-                { "name": "Beni mobili" },
+                { "compatible_names": ["Beni immobili"], "name": "Immobili"},
+                { "compatible_names": ["Beni mobili"], "name": "Veicoli, beni mobili"},
                 { "name": "Investimenti finanziari" },
-                { "name": "Riscossioni" },
+                { "compatible_names": ["Riscossioni"], "name": "Collezioni"},
                 { "name": "Risparmi" }
             ]
         },
         {
             "name": "Entrate",
             "sub_categories": [
-                { "name": "Assegno familiare" },
-                { "name": "Buoni & Coupon" },
-                { "name": "Entrate da affitto" },
-                { "name": "Interessi & Dividendi" },
-                { "name": "Lotterie & Gioco d'azzardo" },
-                { "name": "Prestiti & Noleggi" },
-                { "name": "Quote & Contributi" },
+                { "compatible_names": ["Assegno familiare"], "name": "Mantenimento figli" },
+                { "compatible_names": ["Buoni & Coupon"], "name": "Assegni, coupon, buoni pasto" },
+                { "compatible_names": ["Entrate da affitto"], "name": "Reddito da affitto" },
+                { "compatible_names": ["Interessi & Dividendi"], "name": "Interessi, dividendi" },
+                { "compatible_names": ["Lotterie & Gioco d'azzardo"], "name": "Lotterie, gioco d'azzardo" },
+                { "compatible_names": ["Prestiti & Noleggi"], "name": "Prestiti, noleggi" },
+                { "compatible_names": ["Quote & Contributi"], "name": "Quote e sovvenzioni" },
                 { "name": "Regali" },
                 { "name": "Rimborsi (tasse, acquisti)" },
-                { "name": "Stipendio" },
-                { "name": "Vendite" }
+                { "compatible_names": ["Stipendio"], "name": "Stipendio, fatture" },
+                { "compatible_names": ["Vendite"], "name": "Vendita" }
             ]
         },
         {
             "name": "Altro",
+            "compatible_names": ["Spesa sconosciuta"],
             "sub_categories": [
                 { "name": "Mancante" }
             ]

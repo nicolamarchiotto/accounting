@@ -103,6 +103,7 @@ class Category(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
+    compatible_names = db.Column(db.ARRAY(db.String), nullable=True)
 
     subcategories = db.relationship("SubCategory", back_populates="category")
     entries = db.relationship("Entry", back_populates="category")
@@ -113,6 +114,7 @@ class SubCategory(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+    compatible_names = db.Column(db.ARRAY(db.String), nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
 
     category = db.relationship("Category", back_populates="subcategories")

@@ -6,127 +6,134 @@
     },
     "categories": [
         {
-            "name": "Food & Beverages",
+            "name": "Food & drinks",
+            "compatible_names": ["Food & Drinks"],
             "sub_categories": [
-                { "name": "Bars & Cafés" },
-                { "name": "Restaurants & Fast Food" },
+                { "compatible_names": ["Bars & Cafés"], "name": "Coffee & bar" },
+                { "compatible_names": ["Restaurants & Fast Food"], "name": "Restaurant, fast food" },
                 { "name": "Groceries" }
             ]
         },
         {
             "name": "Shopping",
+            "compatible_names": [],
             "sub_categories": [
-                { "name": "Clothing & Shoes" },
-                { "name": "Pets" },
-                { "name": "Beauty & Wellness" },
-                { "name": "Stationery & Tools" },
-                { "name": "Home & Garden" },
-                { "name": "Electronics" },
-                { "name": "Pharmacy" },
-                { "name": "Children" },
-                { "name": "Jewelry & Accessories" },
-                { "name": "Gifts" },
-                { "name": "Leisure" }
+                { "compatible_names": ["Clothing & Shoes"], "name": "Clothing and shoes" },
+                { "compatible_names": ["Pets"], "name": "Pets, animals" },
+                { "compatible_names": ["Health & Beauty"], "name": "Health & beauty" },
+                { "compatible_names": ["Stationery & Tools"], "name": "Office, tools" },
+                { "compatible_names": ["Home & Garden"], "name": "Home, garden" },
+                { "compatible_names": ["Electronics"], "name": "Electronics, accessories" },
+                { "compatible_names": ["Pharmacy"], "name": "Grocery, pharmacy" },
+                { "compatible_names": ["Children"], "name": "Children" },
+                { "compatible_names": ["Jewelry & Accessories"], "name": "Jewelry, accessories" },
+                { "compatible_names": ["Hobby & Sport"], "name": "Hobby, sport" },
+                { "compatible_names": ["Gifts"], "name": "Gifts, pleasures" },
+                { "name": "Free time" }
             ]
         },
         {
-            "name": "Home",
+            "name": "Housing",
+            "compatible_names": ["Home"],
             "sub_categories": [
                 { "name": "Rent" },
-                { "name": "Property Insurance" },
-                { "name": "Energy & Utilities" },
-                { "name": "Maintenance" },
+                { "compatible_names": ["Property Insurance"], "name": "Property insurance"},
+                { "compatible_names": ["Energy & Utilities"], "name": "Utilities"},
+                { "compatible_names": ["Maintenance"], "name": "Maintenance, repairs"},
                 { "name": "Mortgage" },
                 { "name": "Services" }
             ]
         },
         {
-            "name": "Transportation",
+            "name": "Transport",
             "sub_categories": [
                 { "name": "Taxi" },
-                { "name": "Public Transport" },
-                { "name": "Travel" },
-                { "name": "Business Travel" }
+                { "name": "Public transport" },
+                { "compatible_names": ["Trips"], "name": "Long distance" },
+                { "name": "Business trips" }
             ]
         },
         {
             "name": "Vehicles",
+            "compatible_names": ["Vehicle"],
             "sub_categories": [
-                { "name": "Vehicle Insurance" },
+                { "name": "Vehicle insurance" },
                 { "name": "Fuel" },
                 { "name": "Leasing" },
-                { "name": "Vehicle Maintenance" },
+                { "name": "Vehicle maintenance" },
                 { "name": "Rentals" },
                 { "name": "Parking" }
             ]
         },
         {
-            "name": "Entertainment",
+            "name": "Life & entertainment",
+            "compatible_names": ["Entertainment"],
             "sub_categories": [
-                { "name": "Alcohol & Tobacco" },
-                { "name": "Beauty & Wellness" },
-                { "name": "Culture & Sports Events" },
-                { "name": "Donations & Charity" },
-                { "name": "Events" },
-                { "name": "Education & Development" },
-                { "name": "Hobbies" },
-                { "name": "Books & Subscriptions" },
-                { "name": "Lotteries & Gambling" },
-                { "name": "Health" },
-                { "name": "Sports & Fitness" },
-                { "name": "TV & Streaming" },
-                { "name": "Holidays & Hotels" }
+                { "compatible_names": ["Alcohol & Tobacco"], "name": "Alcohol, tobacco" },
+                { "compatible_names": ["Beauty & Wellness"], "name": "Wellness, beauty" },
+                { "compatible_names": ["Culture & Sports Events"], "name": "Culture, sports events" },
+                { "compatible_names": ["Donations, Charity"], "name": "Charity, gifts" },
+                { "compatible_names": ["Events"], "name": "Life events" },
+                { "compatible_names": ["Education & Development"], "name": "Education, personal development" },
+                { "name": "Hobby" },
+                { "compatible_names": ["Books & Subscriptions"], "name": "Books, audio, subscriptions" },
+                { "compatible_names": ["Lotteries & Gambling"], "name": "Lotteries, gambling" },
+                { "compatible_names": ["Health"], "name": "Healthcare, doctor" },
+                { "compatible_names": ["Sport & Fitness"], "name": "Active sports, fitness" },
+                { "compatible_names": ["TV & Streaming"], "name": "TV, streaming" },
+                { "compatible_names": ["Vacations & Hotels"], "name": "Vacations, travel, hotels" }
             ]
         },
         {
-            "name": "Communication & IT",
+            "name": "Communication, PC",
             "sub_categories": [
                 { "name": "Internet" },
-                { "name": "Postal Services" },
-                { "name": "Software, Apps & Games" },
-                { "name": "Telephone" }
+                { "name": "Postal services" },
+                { "compatible_names": ["Software, Apps & Games"], "name": "Software, apps, games" },
+                { "compatible_names": ["Phone"], "name": "Phone, mobile" }
             ]
         },
         {
-            "name": "Financial Expenses",
+            "name": "Financial expenses",
             "sub_categories": [
-                { "name": "Family Allowance" },
+                { "compatible_names": ["Family allowance"], "name": "Child support" },
                 { "name": "Insurance" },
                 { "name": "Consulting" },
                 { "name": "Fines" },
-                { "name": "Loans & Interest" },
-                { "name": "Fees & Charges" },
-                { "name": "Taxes" }
+                { "compatible_names": ["Loans & Interests"], "name": "Loans, interest" },
+                { "name": "Costs, fees" },
+                { "compatible_names": ["Fees, taxes"],"name": "Taxes" }
             ]
         },
         {
             "name": "Investments",
             "sub_categories": [
-                { "name": "Real Estate" },
-                { "name": "Movable Assets" },
-                { "name": "Financial Investments" },
-                { "name": "Collections" },
+                { "compatible_names": ["Real estate"], "name": "Real estate"},
+                { "compatible_names": ["Movable property"], "name": "Vehicles, movable property"},
+                { "name": "Financial investments" },
+                { "compatible_names": ["Collections"], "name": "Collections"},
                 { "name": "Savings" }
             ]
         },
         {
             "name": "Income",
             "sub_categories": [
-                { "name": "Family Allowance" },
-                { "name": "Vouchers & Coupons" },
-                { "name": "Rental Income" },
-                { "name": "Interest & Dividends" },
-                { "name": "Lotteries & Gambling" },
-                { "name": "Loans & Rentals" },
-                { "name": "Shares & Contributions" },
+                { "compatible_names": ["Family allowance"], "name": "Child support" },
+                { "compatible_names": ["Vouchers & Coupons"], "name": "Vouchers, coupons, meal vouchers" },
+                { "compatible_names": ["Rental income"], "name": "Rental income" },
+                { "compatible_names": ["Interest & Dividends"], "name": "Interest, dividends" },
+                { "compatible_names": ["Lotteries & Gambling"], "name": "Lotteries, gambling" },
+                { "compatible_names": ["Loans & Rentals"], "name": "Loans, rentals" },
+                { "compatible_names": ["Contributions & Grants"], "name": "Contributions and grants" },
                 { "name": "Gifts" },
-                { "name": "Refunds (Taxes, Purchases)" },
-                { "name": "Salary" },
-                { "name": "Sales" }
+                { "name": "Reimbursements (taxes, purchases)" },
+                { "compatible_names": ["Salary"], "name": "Salary, invoices" },
+                { "compatible_names": ["Sales"], "name": "Sales" }
             ]
         },
         {
             "name": "Other",
+            "compatible_names": ["Unknown expense"],
             "sub_categories": [
                 { "name": "Missing" }
             ]

@@ -84,6 +84,7 @@ def add_account(account_data, endpoint):
     
 def add_category(category_data, category_endpoint, subcategory_endpoint):
     name = category_data.get("name")
+    compatible_names = category_data.get("compatible_names", [])
     if not name:
         print(f"❌ Missing name for category: {category_data}")
         return False
@@ -91,7 +92,8 @@ def add_category(category_data, category_endpoint, subcategory_endpoint):
     response = session.post(
         category_endpoint,
         json={
-            "name": name
+            "name": name,
+            "compatible_names": compatible_names
         }
     )
 
@@ -106,6 +108,7 @@ def add_category(category_data, category_endpoint, subcategory_endpoint):
     subcategories = category_data.get("sub_categories", [])
     for subcat in subcategories:
         subcat_name = subcat.get("name")
+        subcat_compatible_names = subcat.get("compatible_names", [])
         if not subcat_name:
             print(f"❌ Missing name for subcategory: {subcat}")
             return False
@@ -114,7 +117,8 @@ def add_category(category_data, category_endpoint, subcategory_endpoint):
             subcategory_endpoint,
             json={
                 "name": subcat_name,
-                "category_name": name
+                "category_name": name,
+                "compatible_names": subcat_compatible_names
             }
         )
 

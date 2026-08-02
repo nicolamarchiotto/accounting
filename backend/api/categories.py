@@ -13,6 +13,7 @@ categories_bp = Blueprint("categories", __name__)
 def get_categories():
     if request.method == "POST":
         name = request.json.get("name")
+        compatible_names = request.json.get("compatible_names", [])
         if not name:
             return jsonify({"error": "Name required"}), 400
         
@@ -21,10 +22,10 @@ def get_categories():
         if existing:
             return jsonify({"error": "Category already exists"}), 409
         
-        category = Category(name=name)
+        category = Category(name=name, compatible_names=compatible_names)
         db.session.add(category)
         db.session.commit()
-        return jsonify({"id": category.id, "name": category.name})
+        return jsonify({"id": category.id, "name": category.name, "compatible_names": category.compatible_names})
 
     categories = Category.query.all()
     result = []
@@ -32,10 +33,12 @@ def get_categories():
         result.append({
             "id": c.id,
             "name": c.name,
+            "compatible_names": c.compatible_names,
             "subcategories": [
                 {
                     "id": sc.id,
-                    "name": sc.name
+                    "name": sc.name,
+                    "compatible_names": sc.compatible_names
                 }
                 for sc in c.subcategories
             ]
@@ -146,6 +149,7 @@ def remove_subcategory(subcategory_id):
 @login_required
 def subcategories():
     name = request.json.get("name")
+    compatible_names = request.json.get("compatible_names", [])
     category_id = request.json.get("category_id")
     if not category_id:
         category_name = request.json.get("category_name")
@@ -162,7 +166,7 @@ def subcategories():
     if existing:
         return jsonify({"error": "Category already exists"}), 409
     
-    subcategory = SubCategory(name=name, category_id=category_id)
+    subcategory = SubCategory(name=name, category_id=category_id, compatible_names=compatible_names)
     db.session.add(subcategory)
     db.session.commit()
-    return jsonify({"id": subcategory.id, "name": subcategory.name})
+    return jsonify({"id": subcategory.id, "name": subcategory.name, "compatible_names": subcategory.compatible_names})

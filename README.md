@@ -29,7 +29,9 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 ## Backend
 - 06/06/25
-    - Import entries functionality
+    - Import entries functionalitY
+        - Problems on income entries, entries not created at adding, no errors reported
+        - Trasfer entry probably require two identical income/expense entries with category TRANSFER. Transfer outside wallet not managed
     - Maybe move accounts balance at on header of accounts container as an additional features
     - Unify Entries and Statistics card so that it is clear that statistics refere to current date selected on entries
         - Keep separation of entry list and statistics, where graphs will be shown   
